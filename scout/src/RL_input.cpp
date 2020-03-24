@@ -1,5 +1,6 @@
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h" 
+#include "tf/transform_datatypes.h"
 #include "vlp_fir/send_msgs.h"
 #include "scout/RL_input_msgs.h"
 #include <sstream>
@@ -11,9 +12,14 @@ scout::RL_input_msgs pub_msg;
 
 void callback(const nav_msgs::Odometry::ConstPtr& msg)
 {
+    tf::Quaternion quat;
+    tf::quaternionMsgToTF(msg->pose.pose.orientation, quat);
+    double roll, pitch, yaw;
+    tf::Matrix3x3(quat).getRPY(roll, pitch, yaw);
+    
     pub_msg.me_x = msg->pose.pose.position.x;
     pub_msg.me_y = msg->pose.pose.position.y;
-    pub_msg.me_yaw = msg->pose.pose.orientation.z;
+    pub_msg.me_yaw = yaw;
     pub_msg.me_v = msg->twist.twist.linear.x;
     pub_msg.me_w = msg->twist.twist.angular.z;
 }
