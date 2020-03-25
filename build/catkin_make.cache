@@ -1,0 +1,2 @@
+scout:velodyne_simulator/velodyne_description:velodyne_simulator/velodyne_gazebo_plugins:velodyne_simulator/velodyne_simulator:vlp_fir
+-DCATKIN_DEVEL_PREFIX=/home/xyw/BUAA/Graduation/devel -DCMAKE_INSTALL_PREFIX=/home/xyw/BUAA/Graduation/install -G Unix Makefiles

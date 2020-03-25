@@ -77,6 +77,9 @@ if __name__ == '__main__':
         for t in range(EP_LEN):
 
             a = ppo.choose_action(s)
+            if np.isnan(a[0]) or np.isnan(a[1]):
+                print('Warning: Action is NAN')
+                os._exit(0)
             env.set_action(a)
 
             s_= env.compute_state()
@@ -95,7 +98,7 @@ if __name__ == '__main__':
                 update(ppo, s_, buffer_r, buffer_s, buffer_a)
         
             # When robot is nearby the goal, skip to next episode
-            if current_dis_from_des_point < 0.1:
+            if current_dis_from_des_point < 0.1 or current_dis_from_des_point > 30:
                 update(ppo, s_, buffer_r, buffer_s, buffer_a)
                 break
 
