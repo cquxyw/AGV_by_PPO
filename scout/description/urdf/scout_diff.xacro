@@ -1,0 +1,323 @@
+<?xml version="1.0"?>
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    
+    <xacro:property name="PI" value="3.1415926535897931"/>
+    <xacro:property name="length" value="1.080" /> 
+    <xacro:property name="width" value="0.4" /> 
+    <xacro:property name="height" value="0.336" /> 
+    <xacro:property name="mass" value="48" />
+    <xacro:property name="ground" value="0.135" />
+    <xacro:property name="wheelrad" value="0.18" />   
+    <xacro:property name="wheelwid" value="0.10" />
+    <xacro:property name="wheeldis" value="0.65" />
+    <xacro:property name="wheelseperate" value="0.576" />
+    <xacro:property name="wheelmass" value="5" />
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.001 0.001 0.001"/>
+            </geometry>
+        </visual>
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <origin xyz="0 0 ${height/2+ground}" rpy="0.0 0.0 0.0"/>
+        <parent link="base_link"/>
+        <child link="chasis"/>
+    </joint>
+
+    <link name="chasis">
+        <visual>
+            <origin xyz="0 0 0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <box size="${length} ${width} ${height}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0.0 0.0 0.0"/>
+            <geometry>
+                <box size="${length} ${width} ${height}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0.0 0.0 0.0"/>
+            <mass value="${mass}"/>
+            <inertia
+            ixx="${mass / 12.0 * (width*width + height*height)}" ixy="0.0" ixz="0.0"
+            iyy="${mass / 12.0 * (height*height + width*width)}" iyz="0.0"
+            izz="${mass / 12.0 * (width*width + width*width)}"/>
+        </inertial>
+    </link>
+
+    <joint name="left_front_joint" type="continuous">
+        <parent link="chasis"/>
+        <child link="left_front_wheel"/>
+        <origin xyz="${wheeldis/2} ${wheelseperate/2} ${-(height/2+ground-wheelrad)}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.5"/>
+      </joint>
+
+    <link name="left_front_wheel">
+        <visual>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <mass value="${wheelmass}"/>
+            <inertia
+            ixx="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}" ixy="0.0" ixz="0.0"
+            iyy="${ (wheelmass * wheelrad * wheelrad) / 2}" iyz="0.0"
+            izz="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}"/>
+            </inertial>
+    </link>
+
+    <joint name="left_rear_joint" type="continuous">
+        <parent link="chasis"/>
+        <child link="left_rear_wheel"/>
+        <origin xyz="${-wheeldis/2} ${wheelseperate/2} ${-(height/2+ground-wheelrad)}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.5"/>
+      </joint>
+
+    <link name="left_rear_wheel">
+        <visual>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <mass value="${wheelmass}"/>
+            <inertia
+            ixx="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}" ixy="0.0" ixz="0.0"
+            iyy="${ (wheelmass * wheelrad * wheelrad) / 2}" iyz="0.0"
+            izz="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}"/>
+            </inertial>
+    </link>
+
+    <joint name="right_rear_joint" type="continuous">
+        <parent link="chasis"/>
+        <child link="right_rear_wheel"/>
+        <origin xyz="${-wheeldis/2} ${-wheelseperate/2} ${-(height/2+ground-wheelrad)}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.5"/>
+      </joint>
+
+    <link name="right_rear_wheel">
+        <visual>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <mass value="${wheelmass}"/>
+            <inertia
+            ixx="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}" ixy="0.0" ixz="0.0"
+            iyy="${ (wheelmass * wheelrad * wheelrad) / 2}" iyz="0.0"
+            izz="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}"/>
+            </inertial>
+    </link>
+
+    <joint name="right_front_joint" type="continuous">
+        <parent link="chasis"/>
+        <child link="right_front_wheel"/>
+        <origin xyz="${wheeldis/2} ${-wheelseperate/2} ${-(height/2+ground-wheelrad)}" rpy="0 0 0"/>
+        <axis xyz="0 1 0"/>
+        <dynamics damping="0.5"/>
+      </joint>
+
+    <link name="right_front_wheel">
+        <visual>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <geometry>
+                <cylinder radius="${wheelrad}" length="${wheelwid}"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="1.5707 0 0"/>
+            <mass value="${wheelmass}"/>
+            <inertia
+            ixx="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}" ixy="0.0" ixz="0.0"
+            iyy="${ (wheelmass * wheelrad * wheelrad) / 2}" iyz="0.0"
+            izz="${wheelmass / 12.0 * (3*wheelrad*wheelrad + wheelwid)}"/>
+            </inertial>
+    </link>
+
+    <transmission name="trans1">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="left_front_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>         
+       <actuator name="motor1">
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans2">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="left_rear_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>         
+       <actuator name="motor2">
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans3">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="right_rear_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>         
+       <actuator name="motor3">
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <transmission name="trans4">
+        <type>transmission_interface/SimpleTransmission</type>
+        <joint name="right_front_joint">
+            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+        </joint>         
+       <actuator name="motor4">
+          <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+          <mechanicalReduction>1</mechanicalReduction>
+        </actuator>
+    </transmission>
+
+    <gazebo reference="left_front_wheel">
+        <mu1>1</mu1>
+        <mu2>1</mu2>
+        <kp>5000000</kp>
+        <kd>1</kd>
+        <fdir1 value="1 0 0"/>
+    </gazebo>
+    <gazebo reference="right_front_wheel">
+        <mu1>1</mu1>
+        <mu2>1</mu2>
+        <kp>5000000</kp>
+        <kd>1</kd>
+        <fdir1 value="1 0 0"/>
+    </gazebo>
+     <gazebo reference="left_rear_wheel">
+        <mu1>1</mu1>
+        <mu2>1</mu2>
+        <kp>5000000</kp>
+        <kd>1</kd>
+        <fdir1 value="1 0 0"/>
+    </gazebo>
+    <gazebo reference="right_rear_wheel">
+        <mu1>1</mu1>
+        <mu2>1</mu2>
+        <kp>5000000</kp>
+        <kd>1</kd>
+        <fdir1 value="1 0 0"/>
+    </gazebo>
+      
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/</robotNamespace>
+        </plugin>
+    </gazebo>
+
+    <link name="lidar">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.1" length="0.05"/>
+            </geometry>
+        </collision>
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.1"/>
+            <inertia
+            ixx="${0.1 / 12.0 * (3*0.1*0.1 + 0.05)}" ixy="0.0" ixz="0.0"
+            iyy="${ (0.1 * 0.1 * 0.1) / 2}" iyz="0.0"
+            izz="${0.1 / 12.0 * (3*0.1*0.1 + 0.05)}"/>
+            </inertial>
+    </link>
+    
+    <joint name="lidarfix" type="fixed">
+        <origin xyz="0 0 0.6" rpy="0 0 0"/>
+        <parent link="chasis"/>
+        <child link="lidar"/>
+      </joint>
+
+    <!-- <gazebo reference="lidar">
+        <sensor name="sensor_ray" type="ray">
+            <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1.0</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>         
+                    <vertical>
+                        <samples>50</samples>
+                        <resolution>1.0</resolution>
+                        <min_angle>-0.4328</min_angle>
+                        <max_angle>0.0349</max_angle>
+                    </vertical>
+                </scan>
+                <range>
+                    <min>0.22</min>                
+                    <max>50</max>
+                    <resolution>0.02</resolution>
+                </range>
+            </ray>
+
+            <plugin name="plugin_1" filename="libgazebo_ros_block_laser.so">
+                <gaussianNoise>0.00</gaussianNoise>
+                <alwaysOn>true</alwaysOn>
+                <updateRate>5</updateRate>
+                <topicName>test_block_laser</topicName>
+                <frameName>lidar</frameName>
+            </plugin>
+            <always_on>true</always_on>
+            <update_rate>5</update_rate>
+        </sensor>
+    </gazebo> -->
+
+</robot>
