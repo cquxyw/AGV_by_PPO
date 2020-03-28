@@ -116,13 +116,19 @@ if __name__ == '__main__':
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
             
                 # When robot is nearby the goal, skip to next episode
-                if current_dis_from_des_point < env.reach_goal_circle or current_dis_from_des_point > env.limit_circle:
+                if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print('Sucess')
+                    break
+                elif current_dis_from_des_point > env.limit_circle:
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print('Over-area')
                     break
 
                 # if speed is too high, skip to next episode
                 if overspeed > env.limit_overspeed:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print('Over-speed')
                     break
             
             # Set the beginning action of robot in next episode, or it would be set by last time
@@ -148,4 +154,5 @@ if __name__ == '__main__':
                 break
 
         if BREAK == 1:
+            print('Warning: Action is nan. Restart Train')
             continue

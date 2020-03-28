@@ -26,7 +26,7 @@ class ppo(object):
 
         # critic
         with tf.variable_scope('critic'):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, reuse=tf.AUTO_REUSE)
             self.v = tf.layers.dense(l1, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
