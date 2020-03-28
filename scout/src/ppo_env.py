@@ -12,12 +12,16 @@ import subprocess
 class env(object):
 
     def __init__(self):
-        self.limit_v = 2
-        self.limit_w = 3.14
+        self.limit_v = 1.5
+        self.limit_w = 0.785
 
-        self.goal_x = 8
-        self.goal_y = 8
-    
+        self.goal_x = 6
+        self.goal_y = 6
+
+        self.limit_circle = 12
+        self.reach_goal_circle = 0.3
+        self.limit_overspeed = 6
+            
     def set_action(self, action):
         # set publisher
         pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
@@ -25,8 +29,9 @@ class env(object):
         print(action)
         
         # clip action
-        action[0] = np.clip(action[0], -2, 2)
-        action[1] = np.clip(action[1], -3.14, 3.14)
+        action[0] = np.clip(action[0], -self.limit_v, self.limit_v)
+        action[1] = np.clip(action[1], -self.limit_w, self.limit_w)
+
 
         # publish action
         if not np.isnan(action[0]) or np.isnan(action[1]):
@@ -35,7 +40,6 @@ class env(object):
             pub.publish(pub_msg)
         else:
             print('Warning: Action is NAN')
-            os._exit(0)
 
     def get_robot_info(self):
         data = rospy.wait_for_message('RLin',RL_input_msgs)
@@ -76,15 +80,15 @@ class env(object):
         reward_diff_yaw = math.sqrt(pow(diff_yaw, 2))
 
         # compute reward
-        reward = reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis
+        reward = (reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis) * 0.1
 
-        if current_dis_from_des_point < 0.1:
-            reward += 200
-        elif 0.1 < current_dis_from_des_point < 1:
-            reward += 20
+        if current_dis_from_des_point < self.reach_goal_circle:
+            reward += 1000
+        # elif self.reach_goal_circle < current_dis_from_des_point < 0.8:
+        #     reward += 5
         
-        if overspeed > 20 or current_dis_from_des_point > 30:
-            reward += -80
+        if overspeed > self.limit_overspeed or current_dis_from_des_point > self.limit_circle:
+            reward += -800
             
         return reward
 

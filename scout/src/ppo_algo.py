@@ -3,15 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/ppo.ckpt'
-dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/'
-
 GAMMA = 0.9
-A_LR = 0.00001
-C_LR = 0.00002
-A_UPDATE_STEPS = 30
-C_UPDATE_STEPS = 30
-S_DIM, A_DIM = 2, 2
+A_UPDATE_STEPS = 10
+C_UPDATE_STEPS = 10
+S_DIM, A_DIM = 5, 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
     dict(name='clip', epsilon=0.2),                 # Clipped surrogate objective, find this is better
@@ -22,6 +17,12 @@ class ppo(object):
     def __init__(self):
         self.sess = tf.Session()
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
+        
+        # self.A_LR = 1e-7
+        # self.C_LR = 2e-7
+        
+        self.C_LR = pow(10, np.random.uniform(-4, -9))
+        self.A_LR = np.random.rand() * self.C_LR
 
         # critic
         with tf.variable_scope('critic'):
@@ -30,7 +31,7 @@ class ppo(object):
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
-            self.ctrain_op = tf.train.AdamOptimizer(C_LR).minimize(self.closs)
+            self.ctrain_op = tf.train.AdamOptimizer(self.C_LR).minimize(self.closs)
 
         # actor
         pi, pi_params = self._build_anet('pi', trainable=True)
@@ -54,13 +55,10 @@ class ppo(object):
                 tf.clip_by_value(ratio, 1.-METHOD['epsilon'], 1.+METHOD['epsilon'])*self.tfadv))
 
         with tf.variable_scope('atrain'):
-            self.atrain_op = tf.train.AdamOptimizer(A_LR).minimize(self.aloss)
+            self.atrain_op = tf.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
         tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
-        self.saver = tf.train.Saver()
-        if os.path.exists(model_path):
-            self.restorer = tf.train.import_meta_graph(model_path+'.meta')
 
     def update(self, s, a, r):
         self.sess.run(self.update_oldpi_op)
@@ -84,20 +82,21 @@ class ppo(object):
     def choose_action(self, s):
         s = s[np.newaxis, :]    
         a = self.sess.run(self.sample_op, {self.tfs: s})[0]
-        # if a[0] > 2:
-        #     a[0] = 2
-        # elif a[0] < 0:
-        #     a[0] = 0
         return a
 
     def get_v(self, s):
         if s.ndim < 2: s = s[np.newaxis, :]
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
-    def save(self,times):
-        itimes = times
-        self.saver.save(self.sess, dir_path+'ppo_%i.ckpt' %(itimes))
+    def save(self, TRAIN_TIME):
+        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        saver = tf.train.Saver()
+        saver.save(self.sess, dir_path)
     
-    def restore(self):
+    def restore(self, TRAIN_TIME):
+        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
         if os.path.exists(model_path):
-            self.restorer.restore(self.sess,tf.train.latest_checkpoint(model_path))
+            restorer = tf.train.import_meta_graph(model_path+'.meta')
+            restorer.restore(self.sess,tf.train.latest_checkpoint(model_path))
+        else:
+            print('No pre-trained model exist')

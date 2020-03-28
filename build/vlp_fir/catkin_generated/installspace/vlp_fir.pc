@@ -1,8 +1,0 @@
-prefix=/home/xyw/BUAA/Graduation/install
-
-Name: vlp_fir
-Description: Description of vlp_fir
-Version: 0.0.0
-Cflags: -I/home/xyw/BUAA/Graduation/install/include
-Libs: -L/home/xyw/BUAA/Graduation/install/lib 
-Requires: roscpp std_msgs
