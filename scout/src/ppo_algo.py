@@ -26,8 +26,8 @@ class ppo(object):
 
         # critic
         with tf.variable_scope('critic'):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
-            self.v = tf.layers.dense(l1, 1)
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu )
+            self.v = tf.layers.dense(l1, 1 )
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -72,9 +72,9 @@ class ppo(object):
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
-            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable )
+            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable )
+            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable )
             norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)   
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
@@ -100,3 +100,6 @@ class ppo(object):
             restorer.restore(self.sess,tf.train.latest_checkpoint(model_path))
         else:
             print('No pre-trained model exist')
+
+    def resetgraph(self):
+        tf.reset_default_graph()
