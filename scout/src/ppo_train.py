@@ -27,6 +27,14 @@ METHOD = [
 ][1]
 
 # save rewards data as npy file of every train
+def plot(ep, ep_r):
+    PLOT_EPISODE.append(ep)
+    PLOT_REWARD.append(ep_r)
+    plt.plot(PLOT_EPISODE, PLOT_REWARD, color="Blue")
+    plt.title("TRAINNING RESULT")
+    plt.xlabel("EPISODE")
+    plt.ylabel("REWARD")
+
 def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
     plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
@@ -73,11 +81,11 @@ if __name__ == '__main__':
 
         # 1. try to solve the problem of action non: fix LR in ppo_algo.py, and uncomment restore function.
         # 2. try to find suitable LR: random LR in ppo_algo.py, and conmment restore function.
-        ppo = ppo_algo.ppo()
+        ppo_TRAIN_TIME = ppo_algo.ppo()
         # ppo.restore(TRAIN_TIME)
         env = ppo_env.env()
 
-        save_para(ppo, env, TRAIN_TIME)
+        save_para(ppo_TRAIN_TIME, env, TRAIN_TIME)
 
         all_ep_r = []
 
@@ -94,7 +102,7 @@ if __name__ == '__main__':
 
             for t in range(EP_LEN):
 
-                a = ppo.choose_action(s)
+                a = ppo_TRAIN_TIME.choose_action(s)
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
                     break
@@ -113,21 +121,21 @@ if __name__ == '__main__':
                 ep_r += r
 
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo_TRAIN_TIME, s_, buffer_r, buffer_s, buffer_a)
             
                 # When robot is nearby the goal, skip to next episode
                 if current_dis_from_des_point < env.reach_goal_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo_TRAIN_TIME, s_, buffer_r, buffer_s, buffer_a)
                     print('Sucess')
                     break
                 elif current_dis_from_des_point > env.limit_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo_TRAIN_TIME, s_, buffer_r, buffer_s, buffer_a)
                     print('Over-area')
                     break
 
                 # if speed is too high, skip to next episode
                 if overspeed > env.limit_overspeed:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo_TRAIN_TIME, s_, buffer_r, buffer_s, buffer_a)
                     print('Over-speed')
                     break
             
@@ -145,8 +153,10 @@ if __name__ == '__main__':
             
             # Save model and plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
+            if ep % 10 == 0:
+                plot(ep, ep_r)
             if ep % 200 == 0:
-                ppo.save(TRAIN_TIME)
+                ppo_TRAIN_TIME.save(TRAIN_TIME)
 
             # Reset gazebo environment
             env.reset_env()
