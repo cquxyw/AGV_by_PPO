@@ -15,8 +15,8 @@ METHOD = [
 class ppo(object):
 
     def __init__(self):
-        self.sess = tf.Session()
-        self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
+        self.sess = tf.compat.v1.Session
+        self.tfs = tf.compat.v1.placeholder(tf.float32, [None, S_DIM], 'state')
         
         # self.A_LR = 1e-7
         # self.C_LR = 2e-7
@@ -25,28 +25,28 @@ class ppo(object):
         self.A_LR = np.random.rand() * self.C_LR
 
         # critic
-        with tf.variable_scope('critic'):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu )
-            self.v = tf.layers.dense(l1, 1 )
-            self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
+        with tf.compat.v1.variable_scope('critic'):
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
+            self.v = tf.layers.dense(l1, 1)
+            self.tfdc_r = tf.compat.v1.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
-            self.ctrain_op = tf.train.AdamOptimizer(self.C_LR).minimize(self.closs)
+            self.ctrain_op = tf.compat.v1.train.AdamOptimizer(self.C_LR).minimize(self.closs)
 
         # actor
         pi, pi_params = self._build_anet('pi', trainable=True)
         oldpi, oldpi_params = self._build_anet('oldpi', trainable=False)
 
-        with tf.variable_scope('sample_action'):
+        with tf.compat.v1.variable_scope('sample_action'):
             self.sample_op = tf.squeeze(pi.sample(1), axis=0)       # choosing action
-        with tf.variable_scope('update_oldpi'):
+        with tf.compat.v1.variable_scope('update_oldpi'):
             self.update_oldpi_op = [oldp.assign(p) for p, oldp in zip(pi_params, oldpi_params)]
 
-        self.tfa = tf.placeholder(tf.float32, [None, A_DIM], 'action')
-        self.tfadv = tf.placeholder(tf.float32, [None, 1], 'advantage')
+        self.tfa = tf.compat.v1.placeholder(tf.float32, [None, A_DIM], 'action')
+        self.tfadv = tf.compat.v1.placeholder(tf.float32, [None, 1], 'advantage')
 
-        with tf.variable_scope('loss'):
-            with tf.variable_scope('surrogate'):
+        with tf.compat.v1.variable_scope('loss'):
+            with tf.compat.v1.variable_scope('surrogate'):
                 ratio = pi.prob(self.tfa) / oldpi.prob(self.tfa)
                 surr = ratio * self.tfadv
 
@@ -54,10 +54,10 @@ class ppo(object):
                 surr,
                 tf.clip_by_value(ratio, 1.-METHOD['epsilon'], 1.+METHOD['epsilon'])*self.tfadv))
 
-        with tf.variable_scope('atrain'):
-            self.atrain_op = tf.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
+        with tf.compat.v1.variable_scope('atrain'):
+            self.atrain_op = tf.compat.v1.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
-        tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
+        tf.compat.v1.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
 
     def update(self, s, a, r):
@@ -71,12 +71,12 @@ class ppo(object):
         [self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) for _ in range(C_UPDATE_STEPS)]
 
     def _build_anet(self, name, trainable):
-        with tf.variable_scope(name):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable )
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable )
-            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable )
+        with tf.compat.v1.variable_scope(name):
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
+            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
+            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)   
-        params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
+        params = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
 
     def choose_action(self, s):
