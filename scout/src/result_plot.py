@@ -7,6 +7,9 @@ ax.set_title("TRAINNING RESULT")
 ax.set_xlabel("EPISODE")
 ax.set_ylabel("REWARD")
 
+path_school = '/home/xyw/BUAA/Graduation/src/scout/result/img/'
+path_home = r'E:\BUAA\Graduation Project\Mid-term report\Mine\src\scout\result\img'
+
 def filter(reward_data):
     reward_plot = np.array([])
     mean_data = np.array([])
@@ -23,10 +26,10 @@ def filter(reward_data):
 if __name__ == '__main__':
     
     for TRAIN_TIME in range(50):
-        result_path = '/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_%i.npy' %(TRAIN_TIME)
+        result_path = path_school + 'PPO_%i.npy' %(TRAIN_TIME)
         if os.path.exists(result_path):
             reward_data = np.load(result_path)
             reward_plot = filter(reward_data)
             ax.plot(reward_data[0], reward_plot, label = 'PPO_%i' %(TRAIN_TIME))
             ax.legend()
-    plt.savefig('/home/xyw/BUAA/Graduation/src/scout/result/img/result.eps')
+    plt.savefig(path_school + 'result.eps')

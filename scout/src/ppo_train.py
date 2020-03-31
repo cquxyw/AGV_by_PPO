@@ -40,7 +40,7 @@ def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
     plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
     PLOT_REWARD = np.append(PLOT_REWARD, ep_r)
-    PLOT_RESULT = np.concatenate([PLOT_EPISODE, PLOT_REWARD])
+    PLOT_RESULT = np.concatenate([[PLOT_EPISODE], [PLOT_REWARD]])
     np.save(plot_path, PLOT_RESULT)
     return PLOT_EPISODE, PLOT_REWARD
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         # ppo.restore(TRAIN_TIME)
         env = ppo_env.env()
 
-        save_para( ppo, env, TRAIN_TIME)
+        save_para(ppo, env, TRAIN_TIME)
 
         all_ep_r = []
 
@@ -122,21 +122,21 @@ if __name__ == '__main__':
                 ep_r += r
 
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
-                    update( ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
             
                 # When robot is nearby the goal, skip to next episode
                 if current_dis_from_des_point < env.reach_goal_circle:
-                    update( ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Sucess')
                     break
                 elif current_dis_from_des_point > env.limit_circle:
-                    update( ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Over-area')
                     break
 
                 # if speed is too high, skip to next episode
                 if overspeed > env.limit_overspeed:
-                    update( ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Over-speed')
                     break
             
@@ -154,8 +154,11 @@ if __name__ == '__main__':
             
             # Save model and plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
+
+            # Draw a plot
             # if ep % 10 == 0:
             #     plot(ep, ep_r)
+            
             if ep % 200 == 0:
                  ppo.save(TRAIN_TIME)
 
