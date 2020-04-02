@@ -27,15 +27,6 @@ METHOD = [
 ][1]
 
 # save rewards data as npy file of every train
-def plot(ep, ep_r):
-    PLOT_EPISODE.append(ep)
-    PLOT_REWARD.append(ep_r)
-    plt.plot(PLOT_EPISODE, PLOT_REWARD, color="Blue")
-    plt.title("TRAINNING RESULT")
-    plt.xlabel("EPISODE")
-    plt.ylabel("REWARD")
-    plt.savefig('/home/xyw/BUAA/Graduation/src/scout/result/img/result.eps')
-
 def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
     plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
@@ -80,8 +71,8 @@ if __name__ == '__main__':
         # if BREAK = 1, means action is 'nan', reset ppo and env to another train.
         BREAK = 0
 
-        # 1. try to solve the problem of action non: fix LR in ppo_algo.py, and uncomment restore function.
-        # 2. try to find suitable LR: random LR in ppo_algo.py, and conmment restore function.
+        # 1. fix LR: Change LR in ppo_algo.py, and uncomment restore function.
+        # 2. random LR: Change LR in ppo_algo.py, and conmment restore function.
         ppo = ppo_algo.ppo()
         print('\n Training Start')
         if TRAIN_TIME == 0:
@@ -110,6 +101,7 @@ if __name__ == '__main__':
                 a =  ppo.choose_action(s)
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
+                    print('Warning: Action is nan. Restart Train')
                     break
                     # os._exit(0)
                 env.set_action(a)
@@ -158,20 +150,14 @@ if __name__ == '__main__':
             
             # Save model and plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
-
-            # Draw a plot
-            # if ep % 10 == 0:
-            #     plot(ep, ep_r)
             
             if ep % 200 == 0:
                  ppo.save(TRAIN_TIME)
 
             # Reset gazebo environment
             env.reset_env()
+            
             if BREAK == 1:
                 break
-
-        if BREAK == 1:
-            print('Warning: Action is nan. Restart Train')
-            ppo.resetgraph()
-            continue
+        
+        ppo.resetgraph()

@@ -25,6 +25,7 @@ private:
     ros::Publisher point_pub;
     ros::Publisher send_ros;
     vlp_fir::send_msgs obj;
+    vlp_fir::obs_info obs_info;
     sensor_msgs::PointCloud2 pc2;
 
     visualization_msgs::Marker marker;
@@ -39,7 +40,8 @@ public:
      point_pub = n.advertise<sensor_msgs::PointCloud2>("/processPoint",10);
      Livox_date_sub = n.subscribe("/livox/lidar",10,&object3dDetector::callback,this) ;
      maker_cube_pub = n.advertise<visualization_msgs::Marker>("/box",10);
-     send_ros = n.advertise<vlp_fir::send_msgs>("obj_",10);
+    //  send_ros = n.advertise<vlp_fir::send_msgs>("obj_",10);
+     send_ros = n.advertise<vlp_fir::obs_info>("obj_",10);
  }
 
  void callback(const sensor_msgs::PointCloud2::ConstPtr& msg)
@@ -80,8 +82,14 @@ public:
          std::cout<<"-"<<cloudClusters[i]->points.size()<<"-";
      } std::cout<<endl;
      for(int i = 0;i < save_MaxPoint.size();i++ ) {
-        obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
-         send_ros.publish(obj);
+         obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
+
+         obs_info.x[i] = obj.x
+         obs_info.y[i] = obj.y
+         obs_info.len[i] = obj.len
+         obs_info.width[i] = obj.width
+
+         send_ros.publish(obs_info);
          maker_cube_pub.publish(marker);
          clusterID++;
      }

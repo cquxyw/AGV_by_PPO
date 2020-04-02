@@ -26,8 +26,8 @@ class ppo(object):
 
         # critic
         with tf.compat.v1.variable_scope('critic'):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
-            self.v = tf.layers.dense(l1, 1)
+            l1 = tf.keras.layers.Dense(self.tfs, 100, tf.nn.relu)
+            self.v = tf.keras.layers.Dense(l1, 1)
             self.tfdc_r = tf.compat.v1.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -57,8 +57,8 @@ class ppo(object):
         with tf.compat.v1.variable_scope('atrain'):
             self.atrain_op = tf.compat.v1.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
-        tf.compat.v1.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
-        self.sess.run(tf.global_variables_initializer())
+        tf.compat.v1.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph_def)
+        self.sess.run(tf.compat.v1.global_variables_initializer())
 
     def update(self, s, a, r):
         self.sess.run(self.update_oldpi_op)
@@ -72,9 +72,9 @@ class ppo(object):
 
     def _build_anet(self, name, trainable):
         with tf.compat.v1.variable_scope(name):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
-            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
+            l1 = tf.keras.layers.Dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
+            mu = 2 * tf.keras.layers.Dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
+            sigma = tf.keras.layers.Dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)   
         params = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
@@ -90,16 +90,16 @@ class ppo(object):
     
     def save(self, TRAIN_TIME):
         dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
-        saver = tf.train.Saver()
+        saver = tf.compat.v1.train.Saver()
         saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
         model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
         if os.path.exists(model_path):
-            restorer = tf.train.import_meta_graph(model_path+'.meta')
-            restorer.restore(self.sess,tf.train.latest_checkpoint(model_path))
+            restorer = tf.compat.v1.train.import_meta_graph(model_path+'.meta')
+            restorer.restore(self.sess, tf.train.latest_checkpoint(model_path))
         else:
             print('No pre-trained model exist')
 
     def resetgraph(self):
-        tf.reset_default_graph()
+        tf.compat.v1.reset_default_graph()
