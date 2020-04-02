@@ -21,8 +21,11 @@ class ppo(object):
         # self.A_LR = 1e-7
         # self.C_LR = 2e-7
         
-        self.C_LR = pow(10, np.random.uniform(-4, -9))
-        self.A_LR = np.random.rand() * self.C_LR
+        # self.A_LR = np.random.rand() * self.C_LR
+        # self.C_LR = pow(10, np.random.uniform(-4, -9))
+
+        self.A_LR = pow(10, np.random.uniform(-7, -8))
+        self.C_LR = 2 * self.A_LR
 
         # critic
         with tf.variable_scope('critic'):
@@ -59,6 +62,7 @@ class ppo(object):
 
         tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
+        self.saver = tf.train.Saver()
 
     def update(self, s, a, r):
         self.sess.run(self.update_oldpi_op)
@@ -90,14 +94,14 @@ class ppo(object):
     
     def save(self, TRAIN_TIME):
         dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
-        saver = tf.train.Saver()
-        saver.save(self.sess, dir_path)
+        self.saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
         model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
-        if os.path.exists(model_path):
-            restorer = tf.train.import_meta_graph(model_path+'.meta')
-            restorer.restore(self.sess,tf.train.latest_checkpoint(model_path))
+        meta_path = model_path + '.meta'
+        if os.path.exists(meta_path):
+            self.saver = tf.train.import_meta_graph(meta_path)
+            self.saver.restore(self.sess, model_path)
         else:
             print('No pre-trained model exist')
 

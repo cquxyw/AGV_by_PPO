@@ -12,11 +12,11 @@ import os
 import csv
 
 import subprocess
-import ppo_algo
+import ppo_algo_tf1 as ppo_algo
 import ppo_env
 
 
-EP_MAX = 3000
+EP_MAX = 100000
 EP_LEN = 320
 BATCH = 32
 GAMMA = 0.9
@@ -83,7 +83,11 @@ if __name__ == '__main__':
         # 1. try to solve the problem of action non: fix LR in ppo_algo.py, and uncomment restore function.
         # 2. try to find suitable LR: random LR in ppo_algo.py, and conmment restore function.
         ppo = ppo_algo.ppo()
-        # ppo.restore(TRAIN_TIME)
+        print('\n Training Start')
+        if TRAIN_TIME == 0:
+            ppo.restore(TRAIN_TIME)
+        else:
+            ppo.restore(TRAIN_TIME-1)
         env = ppo_env.env()
 
         save_para(ppo, env, TRAIN_TIME)
