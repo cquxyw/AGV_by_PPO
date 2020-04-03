@@ -25,6 +25,11 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg)
 }
 void callback2(const vlp_fir::send_msgs::ConstPtr& msg2)
 {
+    pub_msg.obs_num = msg2->num;
+    pub_msg.obs_x = msg2->x
+    pub_msg.obs_y = msg2->y
+    pub_msg.obs_len = msg2->len
+    pub_msg.obs_width = msg2->width
 }
 
 int main(int argc, char **argv)
