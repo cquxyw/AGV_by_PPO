@@ -10,6 +10,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <visualization_msgs/Marker.h>
 #include "vlp_fir/send_msgs.h"
+#include "vlp_fir/obs_info.h"
 using namespace std;
 //SerialPort *My_Serial;
 ProcessPointClouds<pcl::PointXYZ>* PointProcessorI = new ProcessPointClouds<pcl::PointXYZ>();
@@ -84,13 +85,14 @@ public:
      for(int i = 0;i < save_MaxPoint.size();i++ ) {
          obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
 
-        //  obs_info.x[i] = obj.x;
-        //  obs_info.y[i] = obj.y;
-        //  obs_info.len[i] = obj.len;
-        //  obs_info.width[i] = obj.width;
-        //  send_ros.publish(obs_info);
-        
-         send_ros.publish(obj);
+        // modify
+         obs_info.x[i] = obj.x;
+         obs_info.y[i] = obj.y;
+         obs_info.len[i] = obj.len;
+         obs_info.width[i] = obj.width;
+         send_ros.publish(obs_info);
+
+        //  send_ros.publish(obj);
          maker_cube_pub.publish(marker);
          clusterID++;
      }
