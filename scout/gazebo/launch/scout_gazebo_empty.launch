@@ -24,9 +24,9 @@
     <!-- <remap from="/joint_states" to="/hunter/joint_states" /> -->
   </node>
 
-  <!-- <include file="$(find scout)/description/launch/scout_rviz.launch" /> -->
+  <include file="$(find scout)/description/launch/scout_rviz.launch" />
 
-  <!-- <node pkg="vlp_fir" name="do_it" type="do_it"/> -->
+  <node pkg="vlp_fir" name="do_it" type="do_it"/>
 
   <node pkg="scout" name="RL_input" type="RL_input"/>
 

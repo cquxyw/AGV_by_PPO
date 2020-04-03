@@ -1,4 +1,3 @@
-MultiArrayLayout  layout
 int32 num
 float64[] x
 float64[] y

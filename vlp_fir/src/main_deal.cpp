@@ -85,12 +85,16 @@ public:
      for(int i = 0;i < save_MaxPoint.size();i++ ) {
          obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
 
+        cout << 1 << endl;
         // modify
          obs_info.x[i] = obj.x;
          obs_info.y[i] = obj.y;
          obs_info.len[i] = obj.len;
          obs_info.width[i] = obj.width;
+         cout << 2 << endl;
          send_ros.publish(obs_info);
+         
+         cout << 3 << endl;
 
         //  send_ros.publish(obj);
          maker_cube_pub.publish(marker);

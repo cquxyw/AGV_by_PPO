@@ -1,7 +1,8 @@
 #include "ros/ros.h"
 #include "nav_msgs/Odometry.h" 
 #include "tf/transform_datatypes.h"
-#include "vlp_fir/send_msgs.h"
+// #include "vlp_fir/send_msgs.h"
+#include "vlp_fir/obs_info.h"
 #include "scout/RL_input_msgs.h"
 #include <sstream>
 #include <iostream>
@@ -23,13 +24,13 @@ void callback(const nav_msgs::Odometry::ConstPtr& msg)
     pub_msg.me_v = msg->twist.twist.linear.x;
     pub_msg.me_w = msg->twist.twist.angular.z;
 }
-void callback2(const vlp_fir::send_msgs::ConstPtr& msg2)
+void callback2(const vlp_fir::obs_info::ConstPtr& msg2)
 {
     pub_msg.obs_num = msg2->num;
-    pub_msg.obs_x = msg2->x
-    pub_msg.obs_y = msg2->y
-    pub_msg.obs_len = msg2->len
-    pub_msg.obs_width = msg2->width
+    pub_msg.obs_x = msg2->x;
+    pub_msg.obs_y = msg2->y;
+    pub_msg.obs_len = msg2->len;
+    pub_msg.obs_width = msg2->width;
 }
 
 int main(int argc, char **argv)
