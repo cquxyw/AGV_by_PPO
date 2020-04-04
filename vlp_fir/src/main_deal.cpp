@@ -83,25 +83,26 @@ public:
          std::cout<<"-"<<cloudClusters[i]->points.size()<<"-";
      } std::cout<<endl;
 
-    obs_info.num = save_MaxPoint.size();
-    obs_info.x.data.resize(save_MaxPoint.size());
-    obs_info.y.data.resize(save_MaxPoint.size());
-    obs_info.z.data.resize(save_MaxPoint.size());
-    obs_info.len.data.resize(save_MaxPoint.size());
-    obs_info.width.data.resize(save_MaxPoint.size());
-    obs_info.height.data.resize(save_MaxPoint.size());
-    
+     float obs_tem_x[save_MaxPoint.size()];
+     float obs_tem_y[save_MaxPoint.size()];
+     float obs_tem_z[save_MaxPoint.size()];
+     float obs_tem_len[save_MaxPoint.size()];
+     float obs_tem_width[save_MaxPoint.size()];
+     float obs_tem_height[save_MaxPoint.size()];
+
      for(int i = 0;i < save_MaxPoint.size();i++ ) {
         obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
+
         cout << 1 << endl;
     
         // modify
-        obs_info.x.data[i] = obj.x;
-        obs_info.y.data[i] = obj.y;
-        obs_info.z.data[i] = obj.z;
-        obs_info.len.data[i] = obj.len;
-        obs_info.width.data[i] = obj.width;
-        obs_info.height.data[i] = obj.height;
+        obs_tem_x[i] = obj.x;
+        obs_tem_y[i] = obj.y;
+        obs_tem_z[i] = obj.z;
+        obs_tem_len[i] = obj.len;
+        obs_tem_width[i] = obj.width;
+        obs_tem_height[i] = obj.height;
+         
         cout << 2 << endl;
 
         //  send_ros.publish(obj);
@@ -109,7 +110,19 @@ public:
          clusterID++;
      }
 
+
+    cout << 3 << endl;
+
+    obs_info.num = save_MaxPoint.size();
+    obs_info.x = obs_tem_x;
+    obs_info.y = obs_tem_y;
+    obs_info.z = obs_tem_z;
+    obs_info.len = obs_tem_len;
+    obs_info.width = obs_tem_width;
+    obs_info.height = obs_tem_height;
+    
     cout << 4 << endl;
+
     // publish obs_info
     send_ros.publish(obs_info);
 
