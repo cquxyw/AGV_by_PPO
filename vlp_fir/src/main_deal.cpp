@@ -83,53 +83,36 @@ public:
          std::cout<<"-"<<cloudClusters[i]->points.size()<<"-";
      } std::cout<<endl;
 
-     float obs_tem_x[save_MaxPoint.size()];
-     float obs_tem_y[save_MaxPoint.size()];
-     float obs_tem_z[save_MaxPoint.size()];
-     float obs_tem_len[save_MaxPoint.size()];
-     float obs_tem_width[save_MaxPoint.size()];
-     float obs_tem_height[save_MaxPoint.size()];
+    std::vector<float> obs_tem_x;
+    std::vector<float> obs_tem_y;
+    std::vector<float> obs_tem_z;
+    std::vector<float> obs_tem_len;
+    std::vector<float> obs_tem_width;
+    std::vector<float> obs_tem_height;
 
-     for(int i = 0;i < save_MaxPoint.size();i++ ) {
+    for(int i = 0;i < save_MaxPoint.size();i++ ) {
         obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
 
-        cout << 1 << endl;
-    
-        // modify
-        obs_tem_x[i] = obj.x;
-        obs_tem_y[i] = obj.y;
-        obs_tem_z[i] = obj.z;
-        obs_tem_len[i] = obj.len;
-        obs_tem_width[i] = obj.width;
-        obs_tem_height[i] = obj.height;
-         
-        cout << 2 << endl;
+        obs_tem_x.push_back(obj.x);
+        obs_tem_y.push_back(obj.y);
+        obs_tem_z.push_back(obj.z);
+        obs_tem_len.push_back(obj.len);
+        obs_tem_width.push_back(obj.width);
+        obs_tem_height.push_back(obj.height);
 
         //  send_ros.publish(obj);
          maker_cube_pub.publish(marker);
          clusterID++;
-     }
-
-
-    cout << 3 << endl;
-
-    std::vector<float> obs_temv_x(obs_tem_x, obs_tem_x + sizeof(obs_tem_x));
-    std::vector<float> obs_temv_y(obs_tem_y, obs_tem_y + sizeof(obs_tem_y));
-    std::vector<float> obs_temv_z(obs_tem_z, obs_tem_z + sizeof(obs_tem_z));
-    std::vector<float> obs_temv_len(obs_tem_len, obs_tem_len + sizeof(obs_tem_len));
-    std::vector<float> obs_temv_width(obs_tem_width, obs_tem_width + sizeof(obs_tem_width));
-    std::vector<float> obs_temv_height(obs_tem_height, obs_tem_height + sizeof(obs_tem_height));
+    }
 
     obs_info.num = save_MaxPoint.size();
-    obs_info.x = obs_temv_x;
-    obs_info.y = obs_temv_y;
-    obs_info.z = obs_temv_z;
-    obs_info.len = obs_temv_len;
-    obs_info.width = obs_temv_width;
-    obs_info.height = obs_temv_height;
+    obs_info.x = obs_tem_x;
+    obs_info.y = obs_tem_y;
+    obs_info.z = obs_tem_z;
+    obs_info.len = obs_tem_len;
+    obs_info.width = obs_tem_width;
+    obs_info.height = obs_tem_height;
     
-    cout << 4 << endl;
-
     // publish obs_info
     send_ros.publish(obs_info);
 
