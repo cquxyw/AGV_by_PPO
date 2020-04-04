@@ -82,24 +82,37 @@ public:
          PointProcessorI->Boxing(cloudClusters[i], save_MaxPoint, save_MinPoint);
          std::cout<<"-"<<cloudClusters[i]->points.size()<<"-";
      } std::cout<<endl;
-     for(int i = 0;i < save_MaxPoint.size();i++ ) {
-         obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
 
+    obs_info.num = save_MaxPoint.size();
+    obs_info.x.data.resize(save_MaxPoint.size());
+    obs_info.y.data.resize(save_MaxPoint.size());
+    obs_info.z.data.resize(save_MaxPoint.size());
+    obs_info.len.data.resize(save_MaxPoint.size());
+    obs_info.width.data.resize(save_MaxPoint.size());
+    obs_info.height.data.resize(save_MaxPoint.size());
+    
+     for(int i = 0;i < save_MaxPoint.size();i++ ) {
+        obj =  marker_(save_MaxPoint, save_MinPoint, marker, clusterID, i);
         cout << 1 << endl;
+    
         // modify
-         obs_info.x[i] = obj.x;
-         obs_info.y[i] = obj.y;
-         obs_info.len[i] = obj.len;
-         obs_info.width[i] = obj.width;
-         cout << 2 << endl;
-         send_ros.publish(obs_info);
-         
-         cout << 3 << endl;
+        obs_info.x.data[i] = obj.x;
+        obs_info.y.data[i] = obj.y;
+        obs_info.z.data[i] = obj.z;
+        obs_info.len.data[i] = obj.len;
+        obs_info.width.data[i] = obj.width;
+        obs_info.height.data[i] = obj.height;
+        cout << 2 << endl;
 
         //  send_ros.publish(obj);
          maker_cube_pub.publish(marker);
          clusterID++;
      }
+
+    cout << 4 << endl;
+    // publish obs_info
+    send_ros.publish(obs_info);
+
    // PointProcessorI->renderPointCloud(segmentCloud.first,0,255,0);
     pcl::toROSMsg(*segmentCloud.second,pc2);
     #endif
