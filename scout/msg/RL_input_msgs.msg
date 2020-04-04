@@ -5,7 +5,7 @@ float64 me_yaw
 float64 me_v
 float64 me_w
 int32 obs_num
-float64[] obs_x
-float64[] obs_y
-float64[] obs_len
-float64[] obs_width
+float32[] obs_x
+float32[] obs_y
+float32[] obs_len
+float32[] obs_width

@@ -113,13 +113,20 @@ public:
 
     cout << 3 << endl;
 
+    std::vector<float> obs_temv_x(obs_tem_x, obs_tem_x + sizeof(obs_tem_x));
+    std::vector<float> obs_temv_y(obs_tem_y, obs_tem_y + sizeof(obs_tem_y));
+    std::vector<float> obs_temv_z(obs_tem_z, obs_tem_z + sizeof(obs_tem_z));
+    std::vector<float> obs_temv_len(obs_tem_len, obs_tem_len + sizeof(obs_tem_len));
+    std::vector<float> obs_temv_width(obs_tem_width, obs_tem_width + sizeof(obs_tem_width));
+    std::vector<float> obs_temv_height(obs_tem_height, obs_tem_height + sizeof(obs_tem_height));
+
     obs_info.num = save_MaxPoint.size();
-    obs_info.x = obs_tem_x;
-    obs_info.y = obs_tem_y;
-    obs_info.z = obs_tem_z;
-    obs_info.len = obs_tem_len;
-    obs_info.width = obs_tem_width;
-    obs_info.height = obs_tem_height;
+    obs_info.x = obs_temv_x;
+    obs_info.y = obs_temv_y;
+    obs_info.z = obs_temv_z;
+    obs_info.len = obs_temv_len;
+    obs_info.width = obs_temv_width;
+    obs_info.height = obs_temv_height;
     
     cout << 4 << endl;
 

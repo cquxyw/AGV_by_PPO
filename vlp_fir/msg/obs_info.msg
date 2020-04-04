@@ -1,7 +1,7 @@
 int32 num
-float64[] x
-float64[] y
-float64[] z
-float64[] len
-float64[] width
-float64[] height
+float32[] x
+float32[] y
+float32[] z
+float32[] len
+float32[] width
+float32[] height
