@@ -24,7 +24,7 @@ class ppo(object):
         # self.A_LR = np.random.rand() * self.C_LR
         # self.C_LR = pow(10, np.random.uniform(-4, -9))
 
-        self.A_LR = pow(10, np.random.uniform(-7, -8))
+        self.A_LR = pow(10, np.random.uniform(-7, -11))
         self.C_LR = 2 * self.A_LR
 
         # critic
@@ -92,12 +92,12 @@ class ppo(object):
         if s.ndim < 2: s = s[np.newaxis, :]
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
-    def save(self):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO.ckpt'
+    def save(self, TRAIN_TIME):
+        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
         self.saver.save(self.sess, dir_path)
     
-    def restore(self):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO.ckpt'
+    def restore(self, TRAIN_TIME):
+        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)

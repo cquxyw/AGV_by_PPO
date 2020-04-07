@@ -28,7 +28,7 @@
 
   <node pkg="vlp_fir" name="do_it" type="do_it"/>
 
-  <!-- <node pkg="scout" name="RL_input" type="RL_input"/> -->
+  <node pkg="scout" name="RL_input" type="RL_input"/>
 
   <!-- <node pkg="scout" name="reset_world" type="reset.py"/>
 

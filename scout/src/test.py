@@ -16,9 +16,9 @@ def col():
     else:
         print('1:save')
 def odom():
-    data = rospy.wait_for_message('RLin', RL_input_msgs)
+    data = rospy.wait_for_message('obj_', obs_info)
     print('2:')
-    print(data.obs_x[0])
+    print(data)
 
 for i in range(10000):
     rospy.init_node('testt', anonymous=True)

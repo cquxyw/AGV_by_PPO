@@ -16,7 +16,7 @@ import ppo_algo_tf1 as ppo_algo
 import ppo_env
 
 
-EP_MAX = 100000
+EP_MAX = 1000000
 EP_LEN = 320
 BATCH = 32
 GAMMA = 0.9
@@ -75,7 +75,8 @@ if __name__ == '__main__':
         # 2. random LR: Change LR in ppo_algo.py, and conmment restore function.
         ppo = ppo_algo.ppo()
         print('\n Training Start')
-        ppo.restore()
+
+        # ppo.restore(TRAIN_TIME-1)
 
         env = ppo_env.env()
 
