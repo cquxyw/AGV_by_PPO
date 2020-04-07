@@ -6,7 +6,7 @@ import os
 GAMMA = 0.9
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
-S_DIM, A_DIM = 5, 2
+S_DIM, A_DIM = 17, 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
     dict(name='clip', epsilon=0.2),                 # Clipped surrogate objective, find this is better
@@ -92,12 +92,12 @@ class ppo(object):
         if s.ndim < 2: s = s[np.newaxis, :]
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
-    def save(self, TRAIN_TIME):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+    def save(self):
+        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO.ckpt'
         self.saver.save(self.sess, dir_path)
     
-    def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+    def restore(self):
+        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO.ckpt'
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)

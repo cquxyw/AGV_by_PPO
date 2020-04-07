@@ -1,6 +1,9 @@
 import rospy
-from scout.msg import RL_input_msgs
+# from scout.msg import RL_input_msgs
 from geometry_msgs.msg import Twist
+from scout.msg import RL_input_msgs
+from vlp_fir.msg import obs_info
+from gazebo_msgs.msg import ContactsState
 
 import tensorflow as tf
 import numpy as np
@@ -42,10 +45,47 @@ class env(object):
             print('Warning: Action is NAN')
 
     def get_robot_info(self):
-        data = rospy.wait_for_message('RLin',RL_input_msgs)
+        data = rospy.wait_for_message('RLin', RL_input_msgs)
         current_state_info = np.array([data.me_x, data.me_y, data.me_yaw, data.me_v, data.me_w])
         return current_state_info
     
+    def get_obs_info(self):
+        data = rospy.wait_for_message('obj_', obs_info)
+        if data.num >= 3:
+            current_obs_info = np.array([
+                data.x[0], data.y[0], data.len[0], data.width[0],
+                data.x[1], data.y[1], data.len[1], data.width[1],
+                data.x[2], data.y[2], data.len[2], data.width[2],
+            ])
+        elif data.obs_num == 2:
+            current_obs_info = np.array([
+                data.x[0], data.y[0], data.len[0], data.width[0],
+                data.x[1], data.y[1], data.len[1], data.width[1],
+                0, 0, 0, 0,
+            ])
+        elif data.obs_num == 1:
+            current_obs_info = np.array([
+                data.x[0], data.y[0], data.len[0], data.width[0],
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+            ])
+        elif data.obs_num == 0:
+            current_obs_info = np.array([
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+            ])
+        
+        return current_obs_info
+    
+    def get_collision_info(self):
+        data = rospy.wait_for_message('bumper', ContactsState)
+        if len(data.states):
+            collide = 1
+        else:
+            collide = 0
+        return collide
+
     def compute_param(self):
         current_state_info = self.get_robot_info()
 
@@ -61,12 +101,16 @@ class env(object):
     
     def compute_state(self):
         current_state_info = self.get_robot_info()
+        current_obs_info = self.get_obs_info()
+
         # compute state
-        state = current_state_info
+        state = np.concatenate([current_state_info, current_obs_info])
         return state
     
     def compute_reward(self):
         current_state_info = self.get_robot_info()
+        collide = self.get_collision_info()
+
         overspeed, current_dis_from_des_point = self.compute_param()
 
         reward_over_speed = - overspeed
@@ -81,6 +125,9 @@ class env(object):
 
         # compute reward
         reward = (reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis) * 0.1
+
+        if collide == 1:
+            reward += -800
 
         if current_dis_from_des_point < self.reach_goal_circle:
             reward += 1000

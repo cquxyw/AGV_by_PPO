@@ -75,10 +75,8 @@ if __name__ == '__main__':
         # 2. random LR: Change LR in ppo_algo.py, and conmment restore function.
         ppo = ppo_algo.ppo()
         print('\n Training Start')
-        if TRAIN_TIME == 0:
-            ppo.restore(TRAIN_TIME)
-        else:
-            ppo.restore(TRAIN_TIME-1)
+        ppo.restore()
+
         env = ppo_env.env()
 
         save_para(ppo, env, TRAIN_TIME)
@@ -109,6 +107,7 @@ if __name__ == '__main__':
                 s_= env.compute_state()
                 r = env.compute_reward()
 
+                collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
 
                 buffer_s.append(s)
@@ -121,6 +120,11 @@ if __name__ == '__main__':
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
             
                 # When robot is nearby the goal, skip to next episode
+                if collide == 1:
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print('Collision')
+                    break
+                
                 if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Sucess')
