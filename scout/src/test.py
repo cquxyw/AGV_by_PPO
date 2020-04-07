@@ -1,15 +1,18 @@
 import rospy
 import random
 from scout.msg import RL_input_msgs
+from vlp_fir.msg import obs_info
+from gazebo_msgs.msg import ContactsState
 from geometry_msgs.msg import Twist
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-def env(ppo, a, s, car_s):
-    data = rospy.wait_for_message('RLin', RL_input_msgs)
-    print('obs_x = ')
-    print(data.obs_x)
-
-if __name__ == '__main__':
-    env()
+for i in range(10000):
+    rospy.init_node('testt', anonymous=True)
+    print('info = ')
+    data = rospy.wait_for_message('/bumper', ContactsState)
+    if len(data.states):
+        print('collide')
+    else:
+        print('save')

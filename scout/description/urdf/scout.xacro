@@ -35,7 +35,7 @@
                 <box size="${length} ${width} ${height}"/>
             </geometry>
         </visual>
-        <collision>
+        <collision name = 'base_collision'>
             <origin xyz="0 0 0" rpy="0.0 0.0 0.0"/>
             <geometry>
                 <box size="${length} ${width} ${height}"/>
@@ -212,6 +212,31 @@
             <odometryRate>20.0</odometryRate>
             <robotBaseFrame>base_link</robotBaseFrame>
         </plugin>   
+    </gazebo>
+
+    <!-- <gazebo>
+        <plugin name="contact_sensor" filename="libgazebo_ros_bumper.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>20</updateRate>
+            <bumperTopicName>bumper</bumperTopicName>
+            <frameName>chasis</frameName>
+        </plugin>
+    </gazebo> -->
+
+    <gazebo reference="base_link">
+        <sensor name="contact_sensor" type="contact"> 
+            <always_on>true</always_on>
+            <update_rate>20</update_rate>
+            <contact>
+                <collision>base_link_fixed_joint_lump__base_collision_collision</collision>
+            </contact>
+            <plugin name="bumper" filename="libgazebo_ros_bumper.so">
+                <always_on>true</always_on>
+                    <bumperTopicName>bumper</bumperTopicName>
+                    <frameName>base_link</frameName>
+                <update_rate>20</update_rate>
+            </plugin>
+        </sensor>   
     </gazebo>
 
     <gazebo reference="lidar">

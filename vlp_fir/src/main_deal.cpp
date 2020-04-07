@@ -50,7 +50,7 @@ public:
      std::vector<int>indices_leave;
      pcl::PointCloud<pcl::PointXYZ>::Ptr temp_cloud(new pcl::PointCloud<pcl::PointXYZ>);
      pcl::fromROSMsg(*msg, *temp_cloud);
-     pcl::PointCloud<pcl::PointXYZ>::Ptr filterCloud = PointProcessorI->FilterCloud_D(temp_cloud,0.2,50,Eigen::Vector4f(-1,-5,-2,1),Eigen::Vector4f(50,5,1,1));
+     pcl::PointCloud<pcl::PointXYZ>::Ptr filterCloud = PointProcessorI->FilterCloud_D(temp_cloud,0.2,50,Eigen::Vector4f(-20,-5,-2,1),Eigen::Vector4f(50,5,1,1));
 //     remove the NaN invalid points
      pcl::removeNaNFromPointCloud(*filterCloud,*filterCloud, indices_leave);
 
