@@ -106,10 +106,11 @@ if __name__ == '__main__':
                 env.set_action(a)
 
                 s_= env.compute_state()
-                r = env.compute_reward()
 
                 collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
+
+                r = env.compute_reward(collide, overspeed, current_dis_from_des_point)
 
                 buffer_s.append(s)
                 buffer_a.append(a)

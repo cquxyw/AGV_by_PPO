@@ -106,11 +106,11 @@ class env(object):
         state = np.concatenate([current_state_info, current_obs_info])
         return state
     
-    def compute_reward(self):
+    def compute_reward(self, collide, overspeed, current_dis_from_des_point):
         current_state_info = self.get_robot_info()
-        collide = self.get_collision_info()
+        # collide = self.get_collision_info()
 
-        overspeed, current_dis_from_des_point = self.compute_param()
+        # overspeed, current_dis_from_des_point = self.compute_param()
 
         reward_over_speed = - overspeed
         reward_dis = - current_dis_from_des_point
