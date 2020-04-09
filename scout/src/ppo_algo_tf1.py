@@ -27,6 +27,9 @@ class ppo(object):
         self.A_LR = pow(10, np.random.uniform(-7, -11))
         self.C_LR = 2 * self.A_LR
 
+        self.alossr = 0
+        self.clossr = 0
+
         # critic
         with tf.variable_scope('critic'):
             l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
@@ -50,7 +53,9 @@ class ppo(object):
 
         with tf.variable_scope('loss'):
             with tf.variable_scope('surrogate'):
-                ratio = pi.prob(self.tfa) / oldpi.prob(self.tfa)
+                # oldpi_prob = np.clip(oldpi.prob(self.tfa), 1e-5, 1e5)
+                # ratio = pi.prob(self.tfa) / tf.clip_by_value(oldpi.prob(self.tfa), 1e-5, 1e+5)
+                ratio = tf.exp(pi.prob(self.tfa) - oldpi.prob(self.tfa))
                 surr = ratio * self.tfadv
 
             self.aloss = -tf.reduce_mean(tf.minimum(
@@ -70,16 +75,19 @@ class ppo(object):
         
         # update actor
         [self.sess.run(self.atrain_op, {self.tfs: s, self.tfa: a, self.tfadv: adv}) for _ in range(A_UPDATE_STEPS)]
+        self.alossr = self.sess.run(self.aloss, {self.tfs: s, self.tfa: a, self.tfadv: adv})
 
         # update critic
         [self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) for _ in range(C_UPDATE_STEPS)]
+        self.clossr = self.sess.run(self.closs, {self.tfs: s, self.tfdc_r: r})
+
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
             l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
             mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
-            norm_dist = tf.distributions.Normal(loc=mu, scale=sigma)   
+            norm_dist = tf.distributions.Normal(loc=mu, scale=sigma, allow_nan_stats=False)   
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
 

@@ -41,6 +41,8 @@ class PPO(object):
         # Session运行时输入值
         # tfs:状态输入
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
+        self.alossr = 0
+        self.clossr = 0
 
         # critic
         with tf.variable_scope('critic'):
@@ -127,9 +129,14 @@ class PPO(object):
             METHOD['lam'] = np.clip(METHOD['lam'], 1e-4, 10)    # sometimes explode, this clipping is my solution
         else:   # clipping method, find this is better (OpenAI's paper)
             [self.sess.run(self.atrain_op, {self.tfs: s, self.tfa: a, self.tfadv: adv}) for _ in range(A_UPDATE_STEPS)]
-
+            self.alossr = self.sess.run(self.aloss, {self.tfs: s, self.tfa: a, self.tfadv: adv})
+            print('aloss')
+            print(self.alossr)
         # update critic
         [self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) for _ in range(C_UPDATE_STEPS)]
+        self.clossr = self.sess.run(self.closs, {self.tfs: s, self.tfdc_r: r})
+        print('closs')
+        print(self.clossr)
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
