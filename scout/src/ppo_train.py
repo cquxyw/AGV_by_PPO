@@ -120,27 +120,32 @@ if __name__ == '__main__':
 
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print(ppo.alossr, ppo.clossr)
             
                 # When robot is nearby the goal, skip to next episode
                 if collide == 1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print(ppo.alossr, ppo.clossr)
                     print('Collision')
                     break
                 
                 if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print(ppo.alossr, ppo.clossr)
                     print('Sucess')
                     break
                 elif current_dis_from_des_point > env.limit_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print(ppo.alossr, ppo.clossr)
                     print('Over-area')
                     break
 
                 # if speed is too high, skip to next episode
-                if overspeed > env.limit_overspeed:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print('Over-speed')
-                    break
+                # if overspeed > env.limit_overspeed:
+                #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                #     print(ppo.alossr, ppo.clossr)
+                #     print('Over-speed')
+                #     break                   
             
             # Set the beginning action of robot in next episode, or it would be set by last time
             env.set_action(a_init)
@@ -164,6 +169,7 @@ if __name__ == '__main__':
             env.reset_env()
             
             if BREAK == 1:
+                print(ppo.alossr, ppo.clossr)
                 break
         
         ppo.resetgraph()
