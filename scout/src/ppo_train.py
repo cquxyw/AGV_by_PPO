@@ -76,7 +76,7 @@ if __name__ == '__main__':
         ppo = ppo_algo.ppo()
         print('\n Training Start')
 
-        # ppo.restore(TRAIN_TIME-1)
+        ppo.restore(TRAIN_TIME)
 
         env = ppo_env.env()
 
@@ -160,10 +160,10 @@ if __name__ == '__main__':
             )
             
             # Save model and plot
-            PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
+            PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME+1, PLOT_EPISODE, PLOT_REWARD)
             
             if ep % 200 == 0:
-                 ppo.save(TRAIN_TIME)
+                 ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment
             env.reset_env()

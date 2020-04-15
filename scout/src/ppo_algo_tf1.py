@@ -24,7 +24,7 @@ class ppo(object):
         # self.A_LR = np.random.rand() * self.C_LR
         # self.C_LR = pow(10, np.random.uniform(-4, -9))
 
-        self.A_LR = pow(10, np.random.uniform(-7, -11))
+        self.A_LR = pow(10, np.random.uniform(-7, -9))
         self.C_LR = 2 * self.A_LR
 
         self.alossr = 0
@@ -54,8 +54,8 @@ class ppo(object):
         with tf.variable_scope('loss'):
             with tf.variable_scope('surrogate'):
                 # oldpi_prob = np.clip(oldpi.prob(self.tfa), 1e-5, 1e5)
-                # ratio = pi.prob(self.tfa) / tf.clip_by_value(oldpi.prob(self.tfa), 1e-5, 1e+5)
-                ratio = tf.exp(pi.prob(self.tfa) - oldpi.prob(self.tfa))
+                ratio = pi.prob(self.tfa) / tf.clip_by_value(oldpi.prob(self.tfa), 1e-5, 1e+5)
+                # ratio = tf.exp(pi.prob(self.tfa) - oldpi.prob(self.tfa))
                 surr = ratio * self.tfadv
 
             self.aloss = -tf.reduce_mean(tf.minimum(

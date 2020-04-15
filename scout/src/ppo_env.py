@@ -21,8 +21,8 @@ class env(object):
         self.goal_y = 6
 
         self.limit_circle = 12
-        self.reach_goal_circle = 0.3
-        self.limit_overspeed = 6
+        self.reach_goal_circle = 0.5
+        self.limit_overspeed = 12
             
     def set_action(self, action):
         # set publisher
@@ -126,16 +126,16 @@ class env(object):
         reward = (reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis) * 0.1
 
         if collide == 1:
-            reward += -300
+            reward += -200
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 400
+            reward += 300
         # elif self.reach_goal_circle < current_dis_from_des_point < 0.8:
         #     reward += 5
         
         # if overspeed > self.limit_overspeed or current_dis_from_des_point > self.limit_circle:
         if current_dis_from_des_point > self.limit_circle:
-            reward += -300
+            reward += -200
             
         return reward
 

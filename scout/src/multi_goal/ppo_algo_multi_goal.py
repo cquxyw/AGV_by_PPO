@@ -35,15 +35,15 @@ class ppo(object):
         # critic
         with tf.variable_scope('critic'):
 
-            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 4, strides = 1, activation=tf.nn.relu)
-            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.relu)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.relu)
             split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
 
             split_car_flat = tf.layers.flatten(split_car)
             split_obs_flat = tf.layers.flatten(split_obs)
             split_goal_flat = tf.layers.flatten(split_goal)
 
-            merge_net = tf.concat([split_car_flat, split_obs_flat, split_goal_flat], 1)
+            merge_net = tf.keras.layers.concatenate([split_car_flat, split_obs_flat, split_goal_flat])
 
             input_net = tf.layers.dense(merge_net, 128, tf.nn.tanh)
 
@@ -98,15 +98,15 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
-            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 4, strides = 1, activation=tf.nn.relu)
-            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.relu)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.relu)
             split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
 
             split_car_flat = tf.layers.flatten(split_car)
             split_obs_flat = tf.layers.flatten(split_obs)
             split_goal_flat = tf.layers.flatten(split_goal)
 
-            merge_net = tf.concat([split_car_flat, split_obs_flat, split_goal_flat], 1)
+            merge_net = tf.keras.layers.concatenate([split_car_flat, split_obs_flat, split_goal_flat])
 
             input_net = tf.layers.dense(merge_net, 128, tf.nn.relu)
 
@@ -123,7 +123,8 @@ class ppo(object):
         return a
 
     def get_v(self, s):
-        if s.ndim < 2: s = s[np.newaxis, :]
+        # if s.ndim < 2: 
+        s = s[np.newaxis, :]
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):

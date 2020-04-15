@@ -42,9 +42,9 @@ class env(object):
         pub_goal_msg.pose.orientation.y = 0.0
         pub_goal_msg.pose.orientation.z = 0.0
         pub_goal_msg.pose.orientation.w = 1.0
-        pub_goal_msg.scale.x = 1
-        pub_goal_msg.scale.y = 0.1
-        pub_goal_msg.scale.z = 0.1
+        pub_goal_msg.scale.x = 5
+        pub_goal_msg.scale.y = 5
+        pub_goal_msg.scale.z = 5
         pub_goal_msg.color.a = 1.0
         pub_goal_msg.color.r = 0.0
         pub_goal_msg.color.g = 1.0
@@ -143,9 +143,7 @@ class env(object):
         vec_des_point = np.array([self.goal_x, self.goal_y])
         current_dis_from_des_point = np.linalg.norm(vec_des_point - vec_current_point)
 
-        over_v = abs(current_state_info[3]) - self.limit_v
-        over_w = abs(current_state_info[4]) - self.limit_w
-        overspeed = math.hypot(over_v, over_w)
+        overspeed = abs(current_state_info[3] - math.hypot(self.limit_v, self.limit_w))
 
         return overspeed, current_dis_from_des_point
     
@@ -213,6 +211,7 @@ class env(object):
         if dis_obs > q:
             ur = 0
         else:
+            dis_obs = np.clip(dis_obs, 1e-3, 1e+3)
             ur = n_obs * pow(1/dis_obs - 1/q, 2)
         
         # calculate attraction potential energe
@@ -231,8 +230,8 @@ class env(object):
         reward_diff_yaw = math.sqrt(pow(diff_yaw, 2))
 
         # get other rewards
-        reward_u = - self.compute_u(state)
-        reward_overspeed = - overspeed
+        reward_u = self.compute_u(state)
+        reward_overspeed = overspeed
 
         # calculate reward_norm
         reward_norm = []
@@ -244,17 +243,17 @@ class env(object):
             reward_norm.append(abs((reward_all[i] - reward_mean))/reward_var_s)
 
         # compute reward in process
-        reward = reward_norm[0] * 5 + reward_norm[1] * 0.1 + reward_norm[2] * 0.3
+        reward = - reward_norm[0] * 0.5 - reward_norm[1] * 0.05 - reward_norm[2] * 0.8
 
         # add reward in end
         if collide == 1:
-            reward += -300
+            reward += -2000
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 400
+            reward += 3000
         
         if current_dis_from_des_point > self.limit_circle:
-            reward += -300
+            reward += -1000
             
         return reward
 
