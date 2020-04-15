@@ -6,7 +6,9 @@ import os
 GAMMA = 0.9
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
-S_DIM, A_DIM = 17, 2
+S_TYPE = 3
+S_TYPE_DIM = 4
+A_DIM = 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
     dict(name='clip', epsilon=0.2),                 # Clipped surrogate objective, find this is better
@@ -16,7 +18,7 @@ class ppo(object):
 
     def __init__(self):
         self.sess = tf.Session()
-        self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
+        self.tfs = tf.placeholder(tf.float32, [None, S_TYPE, S_TYPE_DIM], 'state')
         
         # self.A_LR = 1e-7
         # self.C_LR = 2e-7
@@ -32,8 +34,20 @@ class ppo(object):
 
         # critic
         with tf.variable_scope('critic'):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
-            self.v = tf.layers.dense(l1, 1)
+
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
+
+            split_car_flat = tf.layers.flatten(split_car)
+            split_obs_flat = tf.layers.flatten(split_obs)
+            split_goal_flat = tf.layers.flatten(split_goal)
+
+            merge_net = tf.concat([split_car_flat, split_obs_flat, split_goal_flat], 1)
+
+            input_net = tf.layers.dense(merge_net, 128, tf.nn.tanh)
+
+            self.v = tf.layers.dense(input_net, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -64,7 +78,7 @@ class ppo(object):
         with tf.variable_scope('atrain'):
             self.atrain_op = tf.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
-        tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
+        # tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
         self.saver = tf.train.Saver()
 
@@ -83,10 +97,23 @@ class ppo(object):
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
-            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
-            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
-            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args = True, allow_nan_stats = True)   
+
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 4, strides = 1, activation=tf.nn.relu)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
+
+            split_car_flat = tf.layers.flatten(split_car)
+            split_obs_flat = tf.layers.flatten(split_obs)
+            split_goal_flat = tf.layers.flatten(split_goal)
+
+            merge_net = tf.concat([split_car_flat, split_obs_flat, split_goal_flat], 1)
+
+            input_net = tf.layers.dense(merge_net, 128, tf.nn.relu)
+
+            mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, trainable=trainable)
+            sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, trainable=trainable)
+            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args = True, allow_nan_stats = True)
+
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params
 
@@ -100,11 +127,11 @@ class ppo(object):
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
         self.saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)

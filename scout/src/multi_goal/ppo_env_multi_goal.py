@@ -20,8 +20,10 @@ class env(object):
         self.limit_w = 0.785
 
         self.limit_circle = 12
-        self.reach_goal_circle = 0.3
+        self.reach_goal_circle = 0.5
         self.limit_overspeed = 6
+        # self.used0_obs_info = np.zeros([5, 4])
+        # self.used1_obs_info = np.zeros([5, 4])
     
     def rand_goal(self):
         self.goal_x = random.randint(1, 10)
@@ -71,35 +73,58 @@ class env(object):
 
     def get_robot_info(self):
         data = rospy.wait_for_message('RLin', RL_input_msgs)
-        current_state_info = np.array([data.me_x, data.me_y, data.me_yaw, data.me_v, data.me_w])
+        speed = math.hypot(data.me_v, data.me_w)
+        current_state_info = np.array([data.me_x, data.me_y, data.me_yaw, speed])
         return current_state_info
     
     def get_obs_info(self):
         data = rospy.wait_for_message('obj_', obs_info)
-        if data.num >= 3:
+        if data.num >= 5:
             current_obs_info = np.array([
-                data.x[0], data.y[0], data.len[0], data.width[0],
-                data.x[1], data.y[1], data.len[1], data.width[1],
-                data.x[2], data.y[2], data.len[2], data.width[2],
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [data.x[3], data.y[3], data.len[3], data.width[3]],
+                [data.x[4], data.y[4], data.len[4], data.width[4]]
+            ])
+        elif data.num == 4:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [data.x[3], data.y[3], data.len[3], data.width[3]],
+                [0, 0, 0, 0]
+            ])
+        elif data.num == 3:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
             ])
         elif data.num == 2:
             current_obs_info = np.array([
-                data.x[0], data.y[0], data.len[0], data.width[0],
-                data.x[1], data.y[1], data.len[1], data.width[1],
-                0, 0, 0, 0,
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
             ])
         elif data.num == 1:
             current_obs_info = np.array([
-                data.x[0], data.y[0], data.len[0], data.width[0],
-                0, 0, 0, 0,
-                0, 0, 0, 0,
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
             ])
         elif data.num == 0:
-            current_obs_info = np.array([
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-                0, 0, 0, 0,
-            ])
+            current_obs_info = np.zeros([5,4])
+
+        # mean_obs_info = (self.used0_obs_info + self.used1_obs_info + current_obs_info) / 3
+        # self.used0_obs_info = self.used1_obs_info
+        # self.used1_obs_info = current_obs_info
         
         return current_obs_info
     
@@ -124,42 +149,110 @@ class env(object):
 
         return overspeed, current_dis_from_des_point
     
+    def choose_obs(self, car_info, obs_info):
+        dis_obs_list = []
+        for i in range (np.shape(obs_info)[0]):
+            obs_x = obs_info[i][0]
+            obs_y = obs_info[i][1]
+            dis_x = car_info[0] - obs_x
+            dis_y = car_info[1] - obs_y
+            dis_obs = math.hypot(dis_x, dis_y)
+            dis_obs_list.append(dis_obs)
+        dis_index = dis_obs_list.index(min(dis_obs_list))
+        return dis_index
+    
     def compute_state(self):
+        # get car state and obstacles state
         current_state_info = self.get_robot_info()
         current_obs_info = self.get_obs_info()
 
+        # car state
+        car_state = current_state_info
+
+        # obstacle state(choose the latest obstacle)
+        min_obs_index = self.choose_obs(current_state_info, current_obs_info)
+        obs_state = current_obs_info[min_obs_index]
+
+        # goal state
+        goal_state = np.array([self.goal_x, self.goal_y, 0, 0])
+
         # compute state
-        state = np.concatenate([current_state_info, current_obs_info])
+        state = np.concatenate([[car_state], [obs_state], [goal_state]])
+
         return state
     
-    def compute_reward(self, collide, overspeed, current_dis_from_des_point):
-        current_state_info = self.get_robot_info()
-        # collide = self.get_collision_info()
+    def compute_u(self, state):
+        # param
+        n_goal = 1
+        n_obs = 1
+        safe_dis = 0.5
+        car_circle = 1.1
 
-        # overspeed, current_dis_from_des_point = self.compute_param()
+        # get state
+        car_info = state[0]
+        obs_state = state[1]
+        goal_state = state[2]
 
-        reward_over_speed = - overspeed
-        reward_dis = - current_dis_from_des_point
+        obs_len = obs_state[2]
+        obs_wid = obs_state[3]
 
-        distance_from_des_x = self.goal_x - current_state_info[0]
-        distance_from_des_y = self.goal_y - current_state_info[1]
+        # calculate safe range
+        q = max(obs_len, obs_wid) + car_circle + safe_dis
+
+        # calculate distance between car and obstacle
+        dis_obs_x = car_info[0] - obs_state[0]
+        dis_obs_y = car_info[1] - obs_state[1]
+        dis_obs = math.hypot(dis_obs_x, dis_obs_y)
+
+        # calculate distance between car and goal
+        dis_goal_x = car_info[0] - goal_state[0]
+        dis_goal_y = car_info[1] - goal_state[1]
+        dis_goal = math.hypot(dis_goal_x, dis_goal_y)
+
+        # calculate repulsion potential energe
+        if dis_obs > q:
+            ur = 0
+        else:
+            ur = n_obs * pow(1/dis_obs - 1/q, 2)
+        
+        # calculate attraction potential energe
+        ua = n_goal * dis_goal
+
+        u_current = ur + ua
+        return u_current
+
+    def compute_reward(self, state, collide, overspeed, current_dis_from_des_point):
+        # computer yaw reward
+        distance_from_des_x = state[2][0] - state[0][0]
+        distance_from_des_y = state[2][1] - state[0][1]
         des_yaw = math.atan2(distance_from_des_y, distance_from_des_x)
-        current_yaw = current_state_info[2]
+        current_yaw = state[0][2]
         diff_yaw = des_yaw - current_yaw
         reward_diff_yaw = math.sqrt(pow(diff_yaw, 2))
 
-        # compute reward
-        reward = (reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis) * 0.1
+        # get other rewards
+        reward_u = - self.compute_u(state)
+        reward_overspeed = - overspeed
 
+        # calculate reward_norm
+        reward_norm = []
+        reward_all = np.array([reward_u, reward_overspeed, reward_diff_yaw])
+        reward_mean = np.mean(reward_all)
+        reward_var = np.var(reward_all)
+        reward_var_s = np.sqrt(reward_var)
+        for i in range(np.shape(reward_all)[0]):
+            reward_norm.append(abs((reward_all[i] - reward_mean))/reward_var_s)
+
+        # compute reward in process
+        reward = reward_norm[0] * 5 + reward_norm[1] * 0.1 + reward_norm[2] * 0.3
+
+        # add reward in end
         if collide == 1:
             reward += -300
 
         if current_dis_from_des_point < self.reach_goal_circle:
             reward += 400
-        # elif self.reach_goal_circle < current_dis_from_des_point < 0.8:
-        #     reward += 5
         
-        # if overspeed > self.limit_overspeed or current_dis_from_des_point > self.limit_circle:
         if current_dis_from_des_point > self.limit_circle:
             reward += -300
             

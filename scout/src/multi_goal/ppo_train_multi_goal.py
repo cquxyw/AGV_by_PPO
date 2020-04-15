@@ -17,8 +17,8 @@ import ppo_env_multi_goal as ppo_env
 
 
 EP_MAX = 1000000
-EP_LEN = 600
-BATCH = 32
+EP_LEN = 800
+BATCH = 20
 GAMMA = 0.9
 
 METHOD = [
@@ -28,7 +28,7 @@ METHOD = [
 
 # save rewards data as npy file of every train
 def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
-    plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_%i.npy' %(TRAIN_TIME)
+    plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/img/PPO_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
     PLOT_REWARD = np.append(PLOT_REWARD, ep_r)
     PLOT_RESULT = np.concatenate([[PLOT_EPISODE], [PLOT_REWARD]])
@@ -37,7 +37,7 @@ def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
 
 # save the parameters as csv file of every train
 def save_para(ppo, env, TRAIN_TIME):
-    csvfile = open('/home/xyw/BUAA/Graduation/src/scout/result/img/PPO_para.csv', 'a+', newline='')
+    csvfile = open('/home/xyw/BUAA/Graduation/src/scout/result/multi/img/PPO_para.csv', 'a+', newline='')
     writer = csv.writer(csvfile)
     data = ['%i' %(TRAIN_TIME), '%i' %(BATCH), '%.1e' %(ppo.A_LR), '%.1e' %(ppo.C_LR)]
     writer.writerow(data)
@@ -111,7 +111,7 @@ if __name__ == '__main__':
                 collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
 
-                r = env.compute_reward(collide, overspeed, current_dis_from_des_point)
+                r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point)
 
                 buffer_s.append(s)
                 buffer_a.append(a)
