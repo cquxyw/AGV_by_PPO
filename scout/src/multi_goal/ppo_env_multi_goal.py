@@ -19,35 +19,36 @@ class env(object):
         self.limit_v = 1.5
         self.limit_w = 0.785
 
-        self.limit_circle = 12
+        self.limit_circle = 20
         self.reach_goal_circle = 0.5
         self.limit_overspeed = 6
         # self.used0_obs_info = np.zeros([5, 4])
         # self.used1_obs_info = np.zeros([5, 4])
     
     def rand_goal(self):
-        self.goal_x = random.randint(1, 10)
-        self.goal_y = random.randint(1, 10)
+        self.goal_x = random.randint(6, 12)
+        self.goal_y = random.randint(6, 12)
         pub_goal = rospy.Publisher('goal_Marker', Marker, queue_size = 10)
         pub_goal_msg = Marker()
 
         pub_goal_msg.ns = "goal_Marker"
+        pub_goal_msg.header.frame_id = "/odom"
+        pub_goal_msg.header.stamp = rospy.Time.now()
         pub_goal_msg.id = 0
-        pub_goal_msg.type = 2
-        pub_goal_msg.action = 0
         pub_goal_msg.pose.position.x = self.goal_x
         pub_goal_msg.pose.position.y = self.goal_y
+        pub_goal_msg.lifetime = rospy.Duration(0)
         pub_goal_msg.pose.position.z = 1
         pub_goal_msg.pose.orientation.x = 0.0
         pub_goal_msg.pose.orientation.y = 0.0
         pub_goal_msg.pose.orientation.z = 0.0
         pub_goal_msg.pose.orientation.w = 1.0
-        pub_goal_msg.scale.x = 5
-        pub_goal_msg.scale.y = 5
-        pub_goal_msg.scale.z = 5
-        pub_goal_msg.color.a = 1.0
-        pub_goal_msg.color.r = 0.0
-        pub_goal_msg.color.g = 1.0
+        pub_goal_msg.scale.x = 0.5
+        pub_goal_msg.scale.y = 0.5
+        pub_goal_msg.scale.z = 0.1
+        pub_goal_msg.color.a = 0.2
+        pub_goal_msg.color.r = 1.0
+        pub_goal_msg.color.g = 0.0
         pub_goal_msg.color.b = 0.0
 
         pub_goal.publish(pub_goal_msg)

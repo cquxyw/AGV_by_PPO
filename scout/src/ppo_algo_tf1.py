@@ -24,7 +24,7 @@ class ppo(object):
         # self.A_LR = np.random.rand() * self.C_LR
         # self.C_LR = pow(10, np.random.uniform(-4, -9))
 
-        self.A_LR = pow(10, np.random.uniform(-7, -9))
+        self.A_LR = pow(10, np.random.uniform(-11, -14))
         self.C_LR = 2 * self.A_LR
 
         self.alossr = 0

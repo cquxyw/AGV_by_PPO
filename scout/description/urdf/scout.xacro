@@ -239,6 +239,67 @@
         </sensor>   
     </gazebo>
 
+    <gazebo reference="left_front_wheel">
+        <sensor name="contact_sensor1" type="contact"> 
+            <always_on>true</always_on>
+            <update_rate>20</update_rate>
+            <contact>
+                <collision>left_front_wheel_fixed_joint_lump__base_collision_collision</collision>
+            </contact>
+            <plugin name="bumper" filename="libgazebo_ros_bumper.so">
+                <always_on>true</always_on>
+                    <bumperTopicName>bumper</bumperTopicName>
+                    <frameName>left_front_wheel</frameName>
+                <update_rate>20</update_rate>
+            </plugin>
+        </sensor>   
+    </gazebo>
+    <gazebo reference="right_front_wheel">
+        <sensor name="contact_sensor2" type="contact"> 
+            <always_on>true</always_on>
+            <update_rate>20</update_rate>
+            <contact>
+                <collision>right_front_wheel_fixed_joint_lump__base_collision_collision</collision>
+            </contact>
+            <plugin name="bumper" filename="libgazebo_ros_bumper.so">
+                <always_on>true</always_on>
+                    <bumperTopicName>bumper</bumperTopicName>
+                    <frameName>base_link</frameName>
+                <update_rate>20</update_rate>
+            </plugin>
+        </sensor>   
+    </gazebo>
+    <gazebo reference="right_rear_wheel">
+        <sensor name="contact_sensor3" type="contact"> 
+            <always_on>true</always_on>
+            <update_rate>20</update_rate>
+            <contact>
+                <collision>right_rear_wheel_fixed_joint_lump__base_collision_collision</collision>
+            </contact>
+            <plugin name="bumper" filename="libgazebo_ros_bumper.so">
+                <always_on>true</always_on>
+                    <bumperTopicName>bumper</bumperTopicName>
+                    <frameName>right_rear_wheel</frameName>
+                <update_rate>20</update_rate>
+            </plugin>
+        </sensor>   
+    </gazebo>
+    <gazebo reference="left_rear_wheel">
+        <sensor name="contact_sensor4" type="contact"> 
+            <always_on>true</always_on>
+            <update_rate>20</update_rate>
+            <contact>
+                <collision>left_rear_wheel_fixed_joint_lump__base_collision_collision</collision>
+            </contact>
+            <plugin name="bumper" filename="libgazebo_ros_bumper.so">
+                <always_on>true</always_on>
+                    <bumperTopicName>bumper</bumperTopicName>
+                    <frameName>left_rear_wheel</frameName>
+                <update_rate>20</update_rate>
+            </plugin>
+        </sensor>   
+    </gazebo>
+
     <gazebo reference="lidar">
         <sensor type="ray" name="VLP16">
           <pose>0 0 0 0 0 0</pose>
@@ -260,7 +321,7 @@
               </vertical>
             </scan>
             <range>
-              <min>0.3</min>
+              <min>0.2</min>
               <max>131</max>
               <resolution>0.001</resolution>
             </range>
@@ -273,7 +334,7 @@
           <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_velodyne_laser.so">
             <topicName>livox/lidar</topicName>
             <frameName>lidar</frameName>
-            <min_range>0.9</min_range>
+            <min_range>0.2</min_range>
             <max_range>130</max_range>
             <gaussianNoise>0.08</gaussianNoise>
             <always_on>true</always_on>

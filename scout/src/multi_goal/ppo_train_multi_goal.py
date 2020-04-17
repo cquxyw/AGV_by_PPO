@@ -2,6 +2,7 @@ import rospy
 import random
 from scout.msg import RL_input_msgs
 from geometry_msgs.msg import Twist
+from visualization_msgs.msg import Marker
 
 import tensorflow as tf
 import numpy as np
@@ -76,10 +77,11 @@ if __name__ == '__main__':
         ppo = ppo_algo.ppo()
         print('\n Training Start')
 
-        # ppo.restore(TRAIN_TIME-1)
+        ppo.restore(TRAIN_TIME)
 
         env = ppo_env.env()
         env.rand_goal()
+        print('goal is %i, %i' %(env.goal_x, env.goal_y))
 
         save_para(ppo, env, TRAIN_TIME)
 
@@ -170,7 +172,7 @@ if __name__ == '__main__':
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
             
             if ep % 200 == 0:
-                 ppo.save(TRAIN_TIME)
+                 ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment
             env.reset_env()
