@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 import os
 
 GAMMA = 0.9
-A_UPDATE_STEPS = 10
-C_UPDATE_STEPS = 10
+A_UPDATE_STEPS = 30
+C_UPDATE_STEPS = 30
 S_TYPE = 3
 S_TYPE_DIM = 4
 A_DIM = 2
@@ -16,9 +16,10 @@ METHOD = [
 
 class ppo(object):
 
-    def __init__(self):
+    def __init__(self, TRAIN_TIME):
         self.sess = tf.Session()
         self.tfs = tf.placeholder(tf.float32, [None, S_TYPE, S_TYPE_DIM], 'state')
+        self.TRAIN_TIME = TRAIN_TIME
         
         # self.A_LR = 1e-7
         # self.C_LR = 2e-7
@@ -26,7 +27,10 @@ class ppo(object):
         # self.A_LR = np.random.rand() * self.C_LR
         # self.C_LR = pow(10, np.random.uniform(-4, -9))
 
-        self.A_LR = pow(10, np.random.uniform(-4, -6))
+        # self.A_LR = pow(10, np.random.uniform(-5, -6)) 
+        # self.C_LR = 2 * self.A_LR
+
+        self.A_LR = 1e-6 * pow(0.8, self.TRAIN_TIME)
         self.C_LR = 2 * self.A_LR
 
         self.alossr = 0
@@ -112,7 +116,7 @@ class ppo(object):
 
             mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, trainable=trainable)
-            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args = True, allow_nan_stats = True)
+            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma)
 
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params

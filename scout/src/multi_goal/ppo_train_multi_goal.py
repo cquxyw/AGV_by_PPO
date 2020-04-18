@@ -74,10 +74,10 @@ if __name__ == '__main__':
 
         # 1. fix LR: Change LR in ppo_algo.py, and uncomment restore function.
         # 2. random LR: Change LR in ppo_algo.py, and conmment restore function.
-        ppo = ppo_algo.ppo()
+        ppo = ppo_algo.ppo(TRAIN_TIME)
         print('\n Training Start')
 
-        ppo.restore(TRAIN_TIME)
+        # ppo.restore(TRAIN_TIME)
 
         env = ppo_env.env()
         env.rand_goal()
@@ -178,6 +178,7 @@ if __name__ == '__main__':
             env.reset_env()
             
             if BREAK == 1:
+                ppo.save(TRAIN_TIME+1)
                 print(ppo.alossr, ppo.clossr)
                 break
         

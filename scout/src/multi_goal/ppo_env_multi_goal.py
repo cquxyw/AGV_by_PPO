@@ -185,7 +185,7 @@ class env(object):
         n_goal = 1
         n_obs = 1
         safe_dis = 0.5
-        car_circle = 1.1
+        car_circle = 1.1/2
 
         # get state
         car_info = state[0]
@@ -216,7 +216,7 @@ class env(object):
             ur = n_obs * pow(1/dis_obs - 1/q, 2)
         
         # calculate attraction potential energe
-        ua = n_goal * dis_goal
+        ua = n_goal * (dis_goal - (car_circle * 3))
 
         u_current = ur + ua
         return u_current
@@ -228,11 +228,11 @@ class env(object):
         des_yaw = math.atan2(distance_from_des_y, distance_from_des_x)
         current_yaw = state[0][2]
         diff_yaw = des_yaw - current_yaw
-        reward_diff_yaw = math.sqrt(pow(diff_yaw, 2))
+        reward_diff_yaw = 1 - abs(diff_yaw)
 
         # get other rewards
-        reward_u = self.compute_u(state)
-        reward_overspeed = overspeed
+        reward_u = - self.compute_u(state)
+        reward_overspeed = - overspeed
 
         # calculate reward_norm
         reward_norm = []
@@ -241,20 +241,20 @@ class env(object):
         reward_var = np.var(reward_all)
         reward_var_s = np.sqrt(reward_var)
         for i in range(np.shape(reward_all)[0]):
-            reward_norm.append(abs((reward_all[i] - reward_mean))/reward_var_s)
+            reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
 
         # compute reward in process
-        reward = - reward_norm[0] * 0.5 - reward_norm[1] * 0.05 - reward_norm[2] * 0.8
+        reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.05
 
         # add reward in end
         if collide == 1:
-            reward += -2000
+            reward += -10
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 3000
+            reward += 15
         
         if current_dis_from_des_point > self.limit_circle:
-            reward += -1000
+            reward += -5
             
         return reward
 
