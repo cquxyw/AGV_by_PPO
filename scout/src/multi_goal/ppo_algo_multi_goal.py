@@ -30,7 +30,7 @@ class ppo(object):
         # self.A_LR = pow(10, np.random.uniform(-5, -6)) 
         # self.C_LR = 2 * self.A_LR
 
-        self.A_LR = 1e-6 * pow(0.8, self.TRAIN_TIME)
+        self.A_LR = 8e-7 * pow(0.8, self.TRAIN_TIME)
         self.C_LR = 2 * self.A_LR
 
         self.alossr = 0
@@ -39,9 +39,9 @@ class ppo(object):
         # critic
         with tf.variable_scope('critic'):
 
-            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.relu)
-            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.relu)
-            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.tanh)
 
             split_car_flat = tf.layers.flatten(split_car)
             split_obs_flat = tf.layers.flatten(split_obs)
@@ -102,9 +102,9 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
-            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.relu)
-            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.relu)
-            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.tanh)
 
             split_car_flat = tf.layers.flatten(split_car)
             split_obs_flat = tf.layers.flatten(split_obs)
@@ -112,11 +112,12 @@ class ppo(object):
 
             merge_net = tf.keras.layers.concatenate([split_car_flat, split_obs_flat, split_goal_flat])
 
-            input_net = tf.layers.dense(merge_net, 128, tf.nn.relu)
+            input_net = tf.layers.dense(merge_net, 128, tf.nn.tanh)
 
-            mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, trainable=trainable)
-            sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, trainable=trainable)
-            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma)
+            a_w = tf.glorot_uniform_initializer()
+            mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
+            sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-4
+            norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= True)
 
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
         return norm_dist, params

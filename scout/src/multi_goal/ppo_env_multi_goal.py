@@ -24,6 +24,8 @@ class env(object):
         self.limit_overspeed = 6
         # self.used0_obs_info = np.zeros([5, 4])
         # self.used1_obs_info = np.zeros([5, 4])
+
+        self.EP_LEN = 800
     
     def rand_goal(self):
         self.goal_x = random.randint(6, 12)
@@ -221,7 +223,7 @@ class env(object):
         u_current = ur + ua
         return u_current
 
-    def compute_reward(self, state, collide, overspeed, current_dis_from_des_point):
+    def compute_reward(self, state, collide, overspeed, current_dis_from_des_point, t):
         # computer yaw reward
         distance_from_des_x = state[2][0] - state[0][0]
         distance_from_des_y = state[2][1] - state[0][1]
@@ -244,17 +246,20 @@ class env(object):
             reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
 
         # compute reward in process
-        reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.05
+        reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.02
 
         # add reward in end
         if collide == 1:
-            reward += -10
+            reward += -20
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 15
+            reward += 30
         
         if current_dis_from_des_point > self.limit_circle:
-            reward += -5
+            reward += -20
+
+        if t == self.EP_LEN:
+            reward += -12
             
         return reward
 

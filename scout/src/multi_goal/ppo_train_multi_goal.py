@@ -77,13 +77,13 @@ if __name__ == '__main__':
         ppo = ppo_algo.ppo(TRAIN_TIME)
         print('\n Training Start')
 
-        # ppo.restore(TRAIN_TIME)
+        ppo.restore(0)
 
         env = ppo_env.env()
         env.rand_goal()
         print('goal is %i, %i' %(env.goal_x, env.goal_y))
 
-        save_para(ppo, env, TRAIN_TIME)
+        save_para(ppo, env, TRAIN_TIME+1)
 
         all_ep_r = []
 
@@ -113,7 +113,7 @@ if __name__ == '__main__':
                 collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
 
-                r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point)
+                r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point, t)
 
                 if ep == 0:
                      s_buff = s[np.newaxis, ...]
@@ -164,7 +164,7 @@ if __name__ == '__main__':
             else: all_ep_r.append(all_ep_r[-1]*0.9 + ep_r*0.1)
             print(
                 'Ep: %i' % ep,
-                "|Ep_r: %i" % ep_r,
+                "|Ep_r: %.3f" % ep_r,
                 ("|Lam: %.4f" % METHOD['lam']) if METHOD['name'] == 'kl_pen' else '',
             )
             
