@@ -116,7 +116,8 @@ if __name__ == '__main__':
                 r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point, t)
 
                 if ep == 0:
-                     s_buff = s[np.newaxis, ...]
+                    s_buff = s[np.newaxis, ...]
+
                 s_buff = s_[np.newaxis, ...]
 
                 buffer_s.append(s_buff)

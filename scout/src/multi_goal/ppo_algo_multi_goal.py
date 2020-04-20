@@ -2,6 +2,7 @@ import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import logging
 
 GAMMA = 0.9
 A_UPDATE_STEPS = 30
@@ -36,6 +37,14 @@ class ppo(object):
         self.alossr = 0
         self.clossr = 0
 
+        self.logger = logging.getLogger('ppo_train')
+        self.handler = logging.FileHandler('/home/xyw/BUAA/Graduation/src/scout/result/multi/log/PPO_Log.txt')
+        self.fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'    
+        self.formatter = logging.Formatter(self.fmt)
+        self.handler.setFormatter(self.formatter)
+        self.logger.addHandler(self.handler)
+        self.logger.setLevel(logging.NOTSET)
+
         # critic
         with tf.variable_scope('critic'):
 
@@ -63,6 +72,8 @@ class ppo(object):
 
         with tf.variable_scope('sample_action'):
             self.sample_op = tf.squeeze(pi.sample(1), axis=0)       # choosing action
+            self.get_mu = pi.mean()
+            self.get_sigma = pi.variance()
         with tf.variable_scope('update_oldpi'):
             self.update_oldpi_op = [oldp.assign(p) for p, oldp in zip(pi_params, oldpi_params)]
 
@@ -71,8 +82,8 @@ class ppo(object):
 
         with tf.variable_scope('loss'):
             with tf.variable_scope('surrogate'):
-                # ratio = pi.prob(self.tfa) / tf.clip_by_value(oldpi.prob(self.tfa), 1e-5, 1e+5)
-                ratio = tf.exp(pi.prob(self.tfa) - oldpi.prob(self.tfa))
+                ratio = pi.prob(self.tfa) / tf.clip_by_value(oldpi.prob(self.tfa), 1e-5, 1e+5)
+                # ratio = tf.exp(pi.prob(self.tfa) - oldpi.prob(self.tfa))
                 surr = ratio * self.tfadv
 
             self.aloss = -tf.reduce_mean(tf.minimum(
@@ -98,7 +109,6 @@ class ppo(object):
         [self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) for _ in range(C_UPDATE_STEPS)]
         self.clossr = self.sess.run(self.closs, {self.tfs: s, self.tfdc_r: r})
 
-
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
@@ -117,6 +127,7 @@ class ppo(object):
             a_w = tf.glorot_uniform_initializer()
             mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
             sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-4
+
             norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= True)
 
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
@@ -125,6 +136,14 @@ class ppo(object):
     def choose_action(self, s):
         s = s[np.newaxis, :]    
         a = self.sess.run(self.sample_op, {self.tfs: s})[0]
+
+        mu = self.sess.run(self.get_mu, {self.tfs: s})
+        sigma = self.sess.run(self.get_sigma, {self.tfs: s})
+        self.logger.info('mu is')
+        self.logger.info(mu)
+        self.logger.info('sigma is')
+        self.logger.info(sigma)
+
         return a
 
     def get_v(self, s):

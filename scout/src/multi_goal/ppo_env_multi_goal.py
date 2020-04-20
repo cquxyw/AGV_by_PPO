@@ -258,7 +258,7 @@ class env(object):
         if current_dis_from_des_point > self.limit_circle:
             reward += -20
 
-        if t == self.EP_LEN:
+        if t == self.EP_LEN-1:
             reward += -12
             
         return reward
