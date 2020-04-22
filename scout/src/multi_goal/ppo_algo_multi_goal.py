@@ -33,7 +33,7 @@ class ppo(object):
 
         # define logger
         self.logger = logging.getLogger('ppo_train')
-        self.handler = logging.FileHandler('/home/xyw/BUAA/Graduation/src/scout/result/multi/log/PPO_Log.txt')
+        self.handler = logging.FileHandler('Train_Result/multi/log/PPO_Log.txt')
         # self.fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
         self.fmt = '%(asctime)s -- %(message)s'
         self.formatter = logging.Formatter(self.fmt)
@@ -145,11 +145,11 @@ class ppo(object):
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        dir_path = 'Train_Result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
         self.saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        model_path = 'Train_Result/multi/model/PPO_%i.ckpt' %(TRAIN_TIME)
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)
