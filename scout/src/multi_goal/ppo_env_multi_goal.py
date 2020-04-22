@@ -4,6 +4,7 @@ from geometry_msgs.msg import Twist
 from vlp_fir.msg import obs_info
 from gazebo_msgs.msg import ContactsState
 from visualization_msgs.msg import Marker
+from std_msgs.msg import Int16MultiArray
 
 import tensorflow as tf
 import numpy as np
@@ -30,30 +31,11 @@ class env(object):
     def rand_goal(self):
         self.goal_x = random.randint(6, 12)
         self.goal_y = random.randint(6, 12)
-        pub_goal = rospy.Publisher('goal_Marker', Marker, queue_size = 10)
-        pub_goal_msg = Marker()
-
-        pub_goal_msg.ns = "goal_Marker"
-        pub_goal_msg.header.frame_id = "/odom"
-        pub_goal_msg.header.stamp = rospy.Time.now()
-        pub_goal_msg.id = 0
-        pub_goal_msg.pose.position.x = self.goal_x
-        pub_goal_msg.pose.position.y = self.goal_y
-        pub_goal_msg.lifetime = rospy.Duration(0)
-        pub_goal_msg.pose.position.z = 1
-        pub_goal_msg.pose.orientation.x = 0.0
-        pub_goal_msg.pose.orientation.y = 0.0
-        pub_goal_msg.pose.orientation.z = 0.0
-        pub_goal_msg.pose.orientation.w = 1.0
-        pub_goal_msg.scale.x = 0.5
-        pub_goal_msg.scale.y = 0.5
-        pub_goal_msg.scale.z = 0.1
-        pub_goal_msg.color.a = 0.2
-        pub_goal_msg.color.r = 1.0
-        pub_goal_msg.color.g = 0.0
-        pub_goal_msg.color.b = 0.0
-
-        pub_goal.publish(pub_goal_msg)
+        goal_rand = rospy.Publisher('goal_Rand', Int16MultiArray, queue_size = 10)
+        goal_rand_msg = Int16MultiArray()
+        goal_rand_msg.data[0] = self.goal_x
+        goal_rand_msg.data[1] = self.goal_y
+        goal_rand.publish(goal_rand_msg)
 
     def set_action(self, action):
         # set publisher
@@ -82,53 +64,11 @@ class env(object):
     
     def get_obs_info(self):
         data = rospy.wait_for_message('obj_', obs_info)
-        if data.num >= 5:
-            current_obs_info = np.array([
-                [data.x[0], data.y[0], data.len[0], data.width[0]],
-                [data.x[1], data.y[1], data.len[1], data.width[1]],
-                [data.x[2], data.y[2], data.len[2], data.width[2]],
-                [data.x[3], data.y[3], data.len[3], data.width[3]],
-                [data.x[4], data.y[4], data.len[4], data.width[4]]
-            ])
-        elif data.num == 4:
-            current_obs_info = np.array([
-                [data.x[0], data.y[0], data.len[0], data.width[0]],
-                [data.x[1], data.y[1], data.len[1], data.width[1]],
-                [data.x[2], data.y[2], data.len[2], data.width[2]],
-                [data.x[3], data.y[3], data.len[3], data.width[3]],
-                [0, 0, 0, 0]
-            ])
-        elif data.num == 3:
-            current_obs_info = np.array([
-                [data.x[0], data.y[0], data.len[0], data.width[0]],
-                [data.x[1], data.y[1], data.len[1], data.width[1]],
-                [data.x[2], data.y[2], data.len[2], data.width[2]],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0]
-            ])
-        elif data.num == 2:
-            current_obs_info = np.array([
-                [data.x[0], data.y[0], data.len[0], data.width[0]],
-                [data.x[1], data.y[1], data.len[1], data.width[1]],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0]
-            ])
-        elif data.num == 1:
-            current_obs_info = np.array([
-                [data.x[0], data.y[0], data.len[0], data.width[0]],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0],
-                [0, 0, 0, 0]
-            ])
-        elif data.num == 0:
-            current_obs_info = np.zeros([5,4])
-
-        # mean_obs_info = (self.used0_obs_info + self.used1_obs_info + current_obs_info) / 3
-        # self.used0_obs_info = self.used1_obs_info
-        # self.used1_obs_info = current_obs_info
-        
+        current_obs_info = np.empty([1,4])
+        for i in range(data.num):
+            iobs = [data.x[i], data.y[i], data.len[i], data.width[i]]
+            current_obs_info = np.vstack([current_obs_info, iobs])
+        current_obs_info = np.delete(current_obs_info, 0, 0)
         return current_obs_info
     
     def get_collision_info(self):
@@ -146,7 +86,12 @@ class env(object):
         vec_des_point = np.array([self.goal_x, self.goal_y])
         current_dis_from_des_point = np.linalg.norm(vec_des_point - vec_current_point)
 
-        overspeed = abs(current_state_info[3] - math.hypot(self.limit_v, self.limit_w))
+        limit_speed = math.hypot(self.limit_v, self.limit_w)
+
+        if current_state_info[3] > limit_speed:
+            overspeed = abs(current_state_info[3] - math.hypot(self.limit_v, self.limit_w))
+        else:
+            overspeed = 0
 
         return overspeed, current_dis_from_des_point
     
@@ -187,7 +132,7 @@ class env(object):
         n_goal = 1
         n_obs = 1
         safe_dis = 0.5
-        car_circle = 1.1/2
+        reward_circle = 5
 
         # get state
         car_info = state[0]
@@ -218,12 +163,12 @@ class env(object):
             ur = n_obs * pow(1/dis_obs - 1/q, 2)
         
         # calculate attraction potential energe
-        ua = n_goal * (dis_goal - (car_circle * 3))
+        ua = n_goal * (dis_goal - reward_circle)
 
         u_current = ur + ua
         return u_current
 
-    def compute_reward(self, state, collide, overspeed, current_dis_from_des_point, t):
+    def compute_reward(self, state, collide, overspeed, current_dis_from_des_point):
         # computer yaw reward
         distance_from_des_x = state[2][0] - state[0][0]
         distance_from_des_y = state[2][1] - state[0][1]
@@ -246,20 +191,16 @@ class env(object):
             reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
 
         # compute reward in process
-        reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.02
+        reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.1
 
-        # add reward in end
         if collide == 1:
-            reward += -20
+            reward += -5
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 30
-        
-        if current_dis_from_des_point > self.limit_circle:
-            reward += -20
+            reward += 500
 
-        if t == self.EP_LEN-1:
-            reward += -12
+        # if current_dis_from_des_point > self.limit_circle:
+        #     reward += -20
             
         return reward
 

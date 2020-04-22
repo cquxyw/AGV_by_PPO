@@ -18,8 +18,8 @@ import ppo_env_multi_goal as ppo_env
 
 
 EP_MAX = 1000000
-EP_LEN = 800
-BATCH = 20
+EP_LEN = 600
+BATCH = 32
 GAMMA = 0.9
 
 METHOD = [
@@ -35,6 +35,18 @@ def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
     PLOT_RESULT = np.concatenate([[PLOT_EPISODE], [PLOT_REWARD]])
     np.save(plot_path, PLOT_RESULT)
     return PLOT_EPISODE, PLOT_REWARD
+
+def save_behavior(ep, TRAIN_TIME, PLOT_EPISODE, sucess_time, collide_time, overarea_time, sucess_list, collide_list, overarea_list):
+    plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/multi/img/PPO_Behavior_%i.npy' %(TRAIN_TIME)
+    
+    sucess_list = np.append(sucess_list, sucess_time)
+    collide_list = np.append(collide_list, collide_time)
+    overarea_list = np.append(overarea_list, collide_time)
+
+    Behavior_result = np.concatenate([[PLOT_EPISODE], [sucess_list], [collide_list], [overarea_list]])
+    np.save(plot_path, Behavior_result)
+
+    return sucess_list, collide_list, overarea_list
 
 # save the parameters as csv file of every train
 def save_para(ppo, env, TRAIN_TIME):
@@ -66,7 +78,11 @@ if __name__ == '__main__':
     for TRAIN_TIME in range(50):
 
         PLOT_EPISODE = np.array([],dtype = int)
-        PLOT_REWARD = np.array([], dtype = int)
+        PLOT_REWARD = np.array([], dtype = float)
+
+        sucess_list = np.array([],dtype = int)
+        collide_list = np.array([], dtype = int)
+        overarea_list = np.array([], dtype = int)
 
         # if BREAK = 0, means action is not 'nan'.
         # if BREAK = 1, means action is 'nan', reset ppo and env to another train.
@@ -77,11 +93,12 @@ if __name__ == '__main__':
         ppo = ppo_algo.ppo(TRAIN_TIME)
         print('\n Training Start')
 
+        # 0: basic model
         ppo.restore(0)
 
         env = ppo_env.env()
         env.rand_goal()
-        print('goal is %i, %i' %(env.goal_x, env.goal_y))
+        print('Goal is %i, %i' %(env.goal_x, env.goal_y))
 
         save_para(ppo, env, TRAIN_TIME+1)
 
@@ -98,14 +115,23 @@ if __name__ == '__main__':
             ep_r = 0
             time.sleep(0.1)
 
+            sucess_time = 0
+            overarea_time = 0
+            collide_time = 0
+
             for t in range(EP_LEN):
 
                 a =  ppo.choose_action(s)
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
+
+                    # record the information of nan situation in order to find out which part has problem
+                    ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
+
                     print('Warning: Action is nan. Restart Train')
                     break
                     # os._exit(0)
+
                 env.set_action(a)
 
                 s_= env.compute_state()
@@ -113,7 +139,10 @@ if __name__ == '__main__':
                 collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
 
-                r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point, t)
+                # collide, overspeed, current_dis_from_des_point and t to judge whether it is end of episode
+                r = env.compute_reward(s_, collide, overspeed, current_dis_from_des_point)
+
+                ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
 
                 if ep == 0:
                     s_buff = s[np.newaxis, ...]
@@ -126,36 +155,28 @@ if __name__ == '__main__':
                 s = s_
                 ep_r += r
                 
-                if current_dis_from_des_point < env.reach_goal_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
-                    print('Sucess')
-                    env.rand_goal()
-                    continue
-
+                # Batch end normally
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
+
+                # Batch end with special behaviors
+                if current_dis_from_des_point < env.reach_goal_circle:
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    sucess_time += 1
+                    env.rand_goal()
+                    print('Sucess, Next Goal is %i, %i' %(env.goal_x, env.goal_y))
             
-                # When robot is nearby the goal, skip to next episode
-                if collide == 1:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
-                    print('Collision')
-                    break
-
-                elif current_dis_from_des_point > env.limit_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
-                    print('Over-area')
-                    break
-
-                # if speed is too high, skip to next episode
-                # if overspeed > env.limit_overspeed:
+                # if collide == 1:
                 #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                #     print(ppo.alossr, ppo.clossr)
-                #     print('Over-speed')
-                #     break                   
+                #     collide_time += 1
+                #     print('Collision')
+                #     break
+
+                # elif current_dis_from_des_point > env.limit_circle:
+                #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                #     overarea_time += 1
+                #     print('Over-area')
+                #     break         
             
             # Set the beginning action of robot in next episode, or it would be set by last time
             env.set_action(a_init)
@@ -168,10 +189,16 @@ if __name__ == '__main__':
                 "|Ep_r: %.3f" % ep_r,
                 ("|Lam: %.4f" % METHOD['lam']) if METHOD['name'] == 'kl_pen' else '',
             )
-            
-            # Save model and plot
+
+            # Save reward data for plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
+
+            # Save behavior data for plot
+            # sucess_list, collide_list, overarea_list = save_behavior(ep, TRAIN_TIME, PLOT_EPISODE,
+            #                                         sucess_time, collide_time, overarea_time, 
+            #                                         sucess_list, collide_list, overarea_list)
             
+            # Save model
             if ep % 200 == 0:
                  ppo.save(TRAIN_TIME+1)
 
@@ -179,8 +206,6 @@ if __name__ == '__main__':
             env.reset_env()
             
             if BREAK == 1:
-                ppo.save(TRAIN_TIME+1)
-                print(ppo.alossr, ppo.clossr)
                 break
         
         ppo.resetgraph()
