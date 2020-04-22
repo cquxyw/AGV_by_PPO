@@ -30,9 +30,9 @@
 
   <node pkg="scout" name="RL_input" type="RL_input"/>
 
-  <node pkg="scout" name="reset_world" type="env_reset.py"/>
+  <!-- <node pkg="scout" name="env_reset" type="env_reset.py"/>
 
-  <node pkg="scout" name="pub_marker" type="Marker.py"/>
+  <node pkg="scout" name="pub_marker" type="Marker.py"/> -->
 
   <!-- <node pkg="scout" name="RL" type="ppo2_env.py"/> -->
 

@@ -35,11 +35,14 @@ class ppo(object):
         self.logger = logging.getLogger('ppo_train')
         self.handler = logging.FileHandler('/home/xyw/BUAA/Graduation/src/scout/result/multi/log/PPO_Log.txt')
         # self.fmt = '%(asctime)s - %(filename)s:%(lineno)s - %(name)s - %(message)s'
-        self.fmt = '%(asctime)s -- '
+        self.fmt = '%(asctime)s -- %(message)s'
         self.formatter = logging.Formatter(self.fmt)
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
         self.logger.setLevel(logging.INFO)
+
+        self.alossr = 0
+        self.clossr = 0
 
         # critic
         with tf.variable_scope('critic'):
@@ -68,6 +71,9 @@ class ppo(object):
 
         with tf.variable_scope('sample_action'):
             self.sample_op = tf.squeeze(pi.sample(1), axis=0)       # choosing action
+
+            self.get_mu = pi.mean()
+            self.get_sigma = pi.variance()
         with tf.variable_scope('update_oldpi'):
             self.update_oldpi_op = [oldp.assign(p) for p, oldp in zip(pi_params, oldpi_params)]
 
@@ -87,11 +93,6 @@ class ppo(object):
         with tf.variable_scope('atrain'):
             self.atrain_op = tf.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
-
-        # get log information        
-        self.get_mu = pi.mean()
-        self.get_sigma = pi.variance()
-
         # tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
         self.saver = tf.train.Saver()
@@ -105,6 +106,9 @@ class ppo(object):
 
         # update critic
         [self.sess.run(self.ctrain_op, {self.tfs: s, self.tfdc_r: r}) for _ in range(C_UPDATE_STEPS)]
+
+        self.alossr = self.sess.run(self.aloss, {self.tfs: s, self.tfa: a, self.tfadv: adv})
+        self.clossr = self.sess.run(self.closs, {self.tfs: s, self.tfdc_r: r})
 
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
@@ -159,23 +163,24 @@ class ppo(object):
         actor = a
         reward = r
 
+        s = s[np.newaxis, :]
+
         # run tf node to get information 
         mu = self.sess.run(self.get_mu, {self.tfs: s})
         sigma = self.sess.run(self.get_sigma, {self.tfs: s})
 
-        adv = self.sess.run(self.advantage, {self.tfs: s, self.tfdc_r: r})
-        aloss = self.sess.run(self.aloss, {self.tfs: s, self.tfa: a, self.tfadv: adv})
-        closs = self.sess.run(self.closs, {self.tfs: s, self.tfdc_r: r})
-
         # write into logger
         self.logger.info('Train_time: {TRAIN_TIME} -- Epoch: {ep} -- time: {t}'
-                        '\n State: {state} ; Actor: {actor} ; Reward: {reward}'
-                        '\n Actor_Loss: {aloss} ; Critic_Loss: {closs} ; Advantage: {adv}'
-                        '\n Mu: {mu} ; Sigma: {sigma}'
+                        '\n State: {state}'
+                        '\n Actor: {actor}'
+                        '\n Reward: {reward}'
+                        '\n Actor_Loss: {aloss} -- Critic_Loss: {closs}'
+                        '\n Mu: {mu} -- Sigma: {sigma}'
                         '\n --------------------------------------------------------------------------------------'
+                        '\n'
                         .format(TRAIN_TIME = TRAIN_TIME, ep = ep, t = t,
                         state = state, actor = actor, reward = reward, 
-                        aloss = aloss, closs = closs, adv = adv,
+                        aloss = self.alossr, closs = self.clossr, 
                         mu = mu, sigma = sigma))
 
     def resetgraph(self):

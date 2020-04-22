@@ -31,10 +31,10 @@ class env(object):
     def rand_goal(self):
         self.goal_x = random.randint(6, 12)
         self.goal_y = random.randint(6, 12)
+        msg = [self.goal_x, self.goal_y]
         goal_rand = rospy.Publisher('goal_Rand', Int16MultiArray, queue_size = 10)
         goal_rand_msg = Int16MultiArray()
-        goal_rand_msg.data[0] = self.goal_x
-        goal_rand_msg.data[1] = self.goal_y
+        goal_rand_msg.data = msg
         goal_rand.publish(goal_rand_msg)
 
     def set_action(self, action):
@@ -64,11 +64,59 @@ class env(object):
     
     def get_obs_info(self):
         data = rospy.wait_for_message('obj_', obs_info)
-        current_obs_info = np.empty([1,4])
-        for i in range(data.num):
-            iobs = [data.x[i], data.y[i], data.len[i], data.width[i]]
-            current_obs_info = np.vstack([current_obs_info, iobs])
-        current_obs_info = np.delete(current_obs_info, 0, 0)
+        # current_obs_info = np.empty([1,4])
+        # for i in range(data.num):
+        #     iobs = [data.x[i], data.y[i], data.len[i], data.width[i]]
+        #     current_obs_info = np.vstack([current_obs_info, iobs])
+        # current_obs_info = np.delete(current_obs_info, 0, 0)
+        # return current_obs_info
+        if data.num >= 5:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [data.x[3], data.y[3], data.len[3], data.width[3]],
+                [data.x[4], data.y[4], data.len[4], data.width[4]]
+            ])
+        elif data.num == 4:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [data.x[3], data.y[3], data.len[3], data.width[3]],
+                [0, 0, 0, 0]
+            ])
+        elif data.num == 3:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [data.x[2], data.y[2], data.len[2], data.width[2]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ])
+        elif data.num == 2:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [data.x[1], data.y[1], data.len[1], data.width[1]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ])
+        elif data.num == 1:
+            current_obs_info = np.array([
+                [data.x[0], data.y[0], data.len[0], data.width[0]],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0]
+            ])
+        elif data.num == 0:
+            current_obs_info = np.zeros([5,4])
+
+        # mean_obs_info = (self.used0_obs_info + self.used1_obs_info + current_obs_info) / 3
+        # self.used0_obs_info = self.used1_obs_info
+        # self.used1_obs_info = current_obs_info
+
         return current_obs_info
     
     def get_collision_info(self):
@@ -132,6 +180,7 @@ class env(object):
         n_goal = 1
         n_obs = 1
         safe_dis = 0.5
+        car_circle = 1.1
         reward_circle = 5
 
         # get state
@@ -194,7 +243,7 @@ class env(object):
         reward = (reward_norm[0] * 0.6 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.1
 
         if collide == 1:
-            reward += -5
+            reward += -3
 
         if current_dis_from_des_point < self.reach_goal_circle:
             reward += 500
