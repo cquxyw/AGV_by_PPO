@@ -7,7 +7,8 @@ import logging
 GAMMA = 0.9
 A_UPDATE_STEPS = 30
 C_UPDATE_STEPS = 30
-S_DIM = 10
+S_TYPE = 3
+S_TYPE_DIM = 4
 A_DIM = 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
@@ -18,7 +19,7 @@ class ppo(object):
 
     def __init__(self, TRAIN_TIME):
         self.sess = tf.Session()
-        self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
+        self.tfs = tf.placeholder(tf.float32, [None, S_TYPE, S_TYPE_DIM], 'state')
         self.TRAIN_TIME = TRAIN_TIME
                 
         # self.A_LR = np.random.rand() * self.C_LR
@@ -46,15 +47,19 @@ class ppo(object):
         # critic
         with tf.variable_scope('critic'):
 
-            # l1 = tf.layers.conv1d(self.tfs, 64, 4, strides = 1, activation=tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.tanh)
 
-            l1 = tf.layers.dense(self.tfs, 128, tf.nn.relu)
+            split_car_flat = tf.layers.flatten(split_car)
+            split_obs_flat = tf.layers.flatten(split_obs)
+            split_goal_flat = tf.layers.flatten(split_goal)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            merge_net = tf.keras.layers.concatenate([split_car_flat, split_obs_flat, split_goal_flat])
 
-            l3 = tf.layers.dense(l2, 64, tf.nn.relu)
+            input_net = tf.layers.dense(merge_net, 128, tf.nn.tanh)
 
-            self.v = tf.layers.dense(l3, 1)
+            self.v = tf.layers.dense(input_net, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -108,17 +113,21 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
-            # l1 = tf.layers.conv1d(self.tfs, 64, 4, strides = 1, activation=tf.nn.relu)
+            split_car = tf.layers.conv1d(self.tfs[:, 0:1, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_obs = tf.layers.conv1d(self.tfs[:, 1:2, :], 64, 1, strides = 1, activation=tf.nn.tanh)
+            split_goal = tf.layers.dense(self.tfs[:, 2:3, 0:2], 64, tf.nn.tanh)
 
-            l1 = tf.layers.dense(self.tfs, 128, tf.nn.relu)
+            split_car_flat = tf.layers.flatten(split_car)
+            split_obs_flat = tf.layers.flatten(split_obs)
+            split_goal_flat = tf.layers.flatten(split_goal)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            merge_net = tf.keras.layers.concatenate([split_car_flat, split_obs_flat, split_goal_flat])
 
-            l3 = tf.layers.dense(l2, 64, tf.nn.relu)
+            input_net = tf.layers.dense(merge_net, 128, tf.nn.tanh)
 
             a_w = tf.glorot_uniform_initializer()
-            mu = 2 * tf.layers.dense(l3, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
-            sigma = tf.layers.dense(l3, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-5
+            mu = 2 * tf.layers.dense(input_net, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
+            sigma = tf.layers.dense(input_net, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-5
 
             norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= False)
 

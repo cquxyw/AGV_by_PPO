@@ -166,17 +166,17 @@ if __name__ == '__main__':
                     env.rand_goal()
                     print('Sucess, Next Goal is %i, %i' %(env.goal_x, env.goal_y))
             
-                if collide == 1:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    collide_time += 1
-                    print('Collision')
-                    break
+                # if collide == 1:
+                #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                #     collide_time += 1
+                #     print('Collision')
+                #     break
 
-                elif current_dis_from_des_point > env.limit_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    overarea_time += 1
-                    print('Over-area')
-                    break         
+                # elif current_dis_from_des_point > env.limit_circle:
+                #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                #     overarea_time += 1
+                #     print('Over-area')
+                #     break         
             
             # Set the beginning action of robot in next episode, or it would be set by last time
             env.set_action(a_init)

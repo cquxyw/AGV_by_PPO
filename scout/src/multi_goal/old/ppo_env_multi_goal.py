@@ -168,10 +168,10 @@ class env(object):
         obs_state = current_obs_info[min_obs_index]
 
         # goal state
-        goal_state = np.array([self.goal_x, self.goal_y])
+        goal_state = np.array([self.goal_x, self.goal_y, 0, 0])
 
         # compute state
-        state = np.concatenate([car_state, obs_state, goal_state])
+        state = np.concatenate([[car_state], [obs_state], [goal_state]])
 
         return state
     
@@ -184,9 +184,9 @@ class env(object):
         reward_circle = 5
 
         # get state
-        car_info = state[0:4]
-        obs_state = state[4:8]
-        goal_state = state[8:10]
+        car_info = state[0]
+        obs_state = state[1]
+        goal_state = state[2]
 
         obs_len = obs_state[2]
         obs_wid = obs_state[3]
@@ -219,10 +219,10 @@ class env(object):
 
     def compute_reward(self, state, collide, overspeed, current_dis_from_des_point):
         # computer yaw reward
-        distance_from_des_x = state[0] - state[8]
-        distance_from_des_y = state[1] - state[9]
+        distance_from_des_x = state[2][0] - state[0][0]
+        distance_from_des_y = state[2][1] - state[0][1]
         des_yaw = math.atan2(distance_from_des_y, distance_from_des_x)
-        current_yaw = state[2]
+        current_yaw = state[0][2]
         diff_yaw = des_yaw - current_yaw
         reward_diff_yaw = 1 - abs(diff_yaw)
 
@@ -240,16 +240,16 @@ class env(object):
             reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
 
         # compute reward in process
-        reward = (reward_norm[0] * 3 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.2
+        reward = (reward_norm[0] * 3 + reward_norm[1] * 0.15 + reward_norm[2] * 0.1) * 0.5
 
         if collide == 1:
-            reward += -400
+            reward += -2
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 600
+            reward += 500
 
-        if current_dis_from_des_point > self.limit_circle:
-            reward += -300
+        # if current_dis_from_des_point > self.limit_circle:
+        #     reward += -20
             
         return reward
 
