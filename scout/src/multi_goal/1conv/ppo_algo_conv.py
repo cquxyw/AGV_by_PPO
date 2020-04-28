@@ -7,6 +7,7 @@ import logging
 GAMMA = 0.9
 A_UPDATE_STEPS = 30
 C_UPDATE_STEPS = 30
+BATCH = 32
 S_DIM = 10
 A_DIM = 2
 METHOD = [
@@ -46,15 +47,17 @@ class ppo(object):
         # critic
         with tf.variable_scope('critic'):
 
-            # l1 = tf.layers.conv1d(self.tfs, 64, 4, strides = 1, activation=tf.nn.relu)
+            l1 = tf.layers.conv1d(self.tfs, 64, 5, strides = 1, activation=tf.nn.relu)
 
-            l1 = tf.layers.dense(self.tfs, 128, tf.nn.relu)
+            l2 = tf.layers.conv1d(l1, 128, 5, strides = 1, activation=tf.nn.relu)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            l3 = tf.layers.max_pooling1d(l2, 3, strides = 1)
 
-            l3 = tf.layers.dense(l2, 64, tf.nn.relu)
+            l4 = tf.layers.dense(l3, 256, tf.nn.relu)
 
-            self.v = tf.layers.dense(l3, 1)
+            l5 = tf.layers.dense(l4, 128, tf.nn.relu)
+
+            self.v = tf.layers.dense(l5, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -94,6 +97,13 @@ class ppo(object):
 
     def update(self, s, a, r):
         self.sess.run(self.update_oldpi_op)
+
+        s = s[np.newaxis, :]
+
+        if np.shape(s)[1] < 3 :
+            s_zeros = np.zeros((1, BATCH - np.shape(s)[1], S_DIM))
+            s = np.column_stack((s, s_zeros))
+
         adv = self.sess.run(self.advantage, {self.tfs: s, self.tfdc_r: r})
         
         # update actor
@@ -108,17 +118,19 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
-            # l1 = tf.layers.conv1d(self.tfs, 64, 4, strides = 1, activation=tf.nn.relu)
+            l1 = tf.layers.conv1d(self.tfs, 64, 5, strides = 1, activation=tf.nn.relu)
 
-            l1 = tf.layers.dense(self.tfs, 128, tf.nn.relu)
+            l2 = tf.layers.conv1d(l1, 128, 5, strides = 1, activation=tf.nn.relu)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            l3 = tf.layers.max_pooling1d(l2, 3, strides = 1)
 
-            l3 = tf.layers.dense(l2, 64, tf.nn.relu)
+            l4 = tf.layers.dense(l3, 256, tf.nn.relu)
+
+            l5 = tf.layers.dense(l4, 128, tf.nn.relu)
 
             a_w = tf.glorot_uniform_initializer()
-            mu = 2 * tf.layers.dense(l3, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
-            sigma = tf.layers.dense(l3, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-5
+            mu = 2 * tf.layers.dense(l5, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
+            sigma = tf.layers.dense(l5, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-5
 
             norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= False)
 
@@ -126,13 +138,13 @@ class ppo(object):
         return norm_dist, params
 
     def choose_action(self, s):
-        s = s[np.newaxis, :]    
+        s = s[np.newaxis, np.newaxis, :]
         a = self.sess.run(self.sample_op, {self.tfs: s})[0]
         return a
 
     def get_v(self, s):
         # if s.ndim < 2: 
-        s = s[np.newaxis, :]
+        s = s[np.newaxis, np.newaxis, :]
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):
@@ -154,7 +166,7 @@ class ppo(object):
         actor = a
         reward = r
 
-        s = s[np.newaxis, :]
+        s = s[np.newaxis, np.newaxis, :]
 
         # run tf node to get information 
         mu = self.sess.run(self.get_mu, {self.tfs: s})
