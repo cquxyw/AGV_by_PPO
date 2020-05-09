@@ -15,6 +15,7 @@ import os
 import subprocess
 
 real_env = 0
+goal = [(3,0),(2,-6),(3,-8),(6,0),(-1,5),(-6,1),(-6,3),(-6,-7),(-4,-6)]
 
 class env(object):
 
@@ -25,8 +26,9 @@ class env(object):
         self.reach_goal_circle = 0.5
     
     def rand_goal(self):
-        self.goal_x = random.randint(6, 12)
-        self.goal_y = random.randint(6, 12)
+        goal_index = random.randint(0, 8)
+        self.goal_x = goal[goal_index][0]
+        self.goal_y = goal[goal_index][1]
         msg = [self.goal_x, self.goal_y]
         goal_rand = rospy.Publisher('goal_Rand', Int16MultiArray, queue_size = 10)
         goal_rand_msg = Int16MultiArray()
@@ -41,6 +43,8 @@ class env(object):
         
         # clip action
         action[0] = np.clip(action[0], -self.limit_v, self.limit_v)
+
+        action[1] = action[1] * (0.785/1.5)
         action[1] = np.clip(action[1], -self.limit_w, self.limit_w)
 
 
@@ -58,7 +62,6 @@ class env(object):
         return current_state_info
     
     def get_obs_info(self):
-        data = rospy.wait_for_message('obj_', obs_info)
 
         ## simple application
         # current_obs_info = np.empty([1,4])
@@ -70,6 +73,7 @@ class env(object):
 
         ## real environment
         if real_env == 1:
+            data = rospy.wait_for_message('obj_', obs_info)
             if data.num >= 5:
                 current_obs_info = np.array([
                     [data.x[0], data.y[0], data.len[0], data.width[0]],
@@ -113,7 +117,7 @@ class env(object):
             elif data.num == 0:
                 current_obs_info = np.zeros([5,4])
         else:
-            current_obs_info = np.array([2,3,1,1,3,4,1,1,5,6,1,1,7,8,1,1,9,10,1,1])
+            current_obs_info = np.array([5,3,0.5,0.5,-2,4,0.5,0.5,-4,5,0.5,0.5,3,-3,0.5,0.5,-7,-1,0.5,0.5,-2,3,0.5,0.5])
 
         return current_obs_info
     
@@ -177,9 +181,10 @@ class env(object):
 
         return state
 
-    def compute_reward(self, collide, current_dis_from_des_point):
+    def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point):
 
-        reward = 0
+        # reward = 0
+        reward = (last_dis_from_des_point - current_dis_from_des_point) / 100
 
         if collide == 1:
             reward += -1

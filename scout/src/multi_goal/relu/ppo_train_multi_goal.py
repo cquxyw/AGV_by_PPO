@@ -18,8 +18,8 @@ import ppo_env_multi_goal as ppo_env
 
 
 EP_MAX = 1000000
-EP_LEN = 320
-BATCH = 32
+EP_LEN = 300
+BATCH = 64
 GAMMA = 0.9
 
 METHOD = [
@@ -92,12 +92,14 @@ if __name__ == '__main__':
             a_init = [0, 0]
             s = env.set_init_pose()
 
+            last_dis_from_des_point = env.compute_state()
+
             buffer_s = []
             buffer_a = []
             buffer_r = []
 
             ep_r = 0
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             for t in range(EP_LEN):
 
@@ -120,7 +122,9 @@ if __name__ == '__main__':
                 current_dis_from_des_point = env.compute_param()
 
                 # collide, current_dis_from_des_point to judge whether it is end of episode
-                r = env.compute_reward(collide, current_dis_from_des_point)
+                r = env.compute_reward(collide, current_dis_from_des_point, last_dis_from_des_point)
+
+                last_dis_from_des_point = current_dis_from_des_point
 
                 ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
 
@@ -143,6 +147,7 @@ if __name__ == '__main__':
                 if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     env.rand_goal()
+                    last_dis_from_des_point = env.compute_state()
                     print('Sucess, Next Goal is %i, %i' %(env.goal_x, env.goal_y))
             
                 if collide == 1:

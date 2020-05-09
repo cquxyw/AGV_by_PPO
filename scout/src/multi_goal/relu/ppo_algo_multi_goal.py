@@ -7,7 +7,7 @@ import logging
 GAMMA = 0.9
 A_UPDATE_STEPS = 30
 C_UPDATE_STEPS = 30
-S_DIM = 26
+S_DIM = 31
 A_DIM = 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
@@ -21,7 +21,7 @@ class ppo(object):
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
         self.TRAIN_TIME = TRAIN_TIME
 
-        self.A_LR = 1e-5 * pow(0.8, self.TRAIN_TIME)
+        self.A_LR = 1e-6 * pow(0.8, self.TRAIN_TIME)
         self.C_LR = 2 * self.A_LR
 
         # define logger
@@ -100,8 +100,8 @@ class ppo(object):
             l1 = tf.layers.dense(self.tfs, 256, tf.nn.relu)
 
             a_w = tf.glorot_uniform_initializer()
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
-            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-5
+            mu = 1.5 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
+            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-3
 
             norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= False)
 
