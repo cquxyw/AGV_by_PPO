@@ -23,7 +23,7 @@ class env(object):
         self.limit_v = 1.5
         self.limit_w = 0.785
 
-        self.reach_goal_circle = 0.5
+        self.reach_goal_circle = 0.8
     
     def rand_goal(self):
         goal_index = random.randint(0, 8)
@@ -184,7 +184,7 @@ class env(object):
     def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point):
 
         # reward = 0
-        reward = (last_dis_from_des_point - current_dis_from_des_point) / 100
+        reward = (last_dis_from_des_point - current_dis_from_des_point) / 10
 
         if collide == 1:
             reward += -1

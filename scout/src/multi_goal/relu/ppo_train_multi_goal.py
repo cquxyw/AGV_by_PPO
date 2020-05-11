@@ -18,7 +18,7 @@ import ppo_env_multi_goal as ppo_env
 
 
 EP_MAX = 1000000
-EP_LEN = 300
+EP_LEN = 384
 BATCH = 64
 GAMMA = 0.9
 
@@ -92,7 +92,7 @@ if __name__ == '__main__':
             a_init = [0, 0]
             s = env.set_init_pose()
 
-            last_dis_from_des_point = env.compute_state()
+            last_dis_from_des_point = env.compute_param()
 
             buffer_s = []
             buffer_a = []
@@ -147,7 +147,7 @@ if __name__ == '__main__':
                 if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     env.rand_goal()
-                    last_dis_from_des_point = env.compute_state()
+                    last_dis_from_des_point = env.compute_param()
                     print('Sucess, Next Goal is %i, %i' %(env.goal_x, env.goal_y))
             
                 if collide == 1:
