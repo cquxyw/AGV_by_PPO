@@ -3,8 +3,11 @@ from scout.msg import RL_input_msgs
 from geometry_msgs.msg import Twist
 from vlp_fir.msg import obs_info
 from gazebo_msgs.msg import ContactsState
+from gazebo_msgs.msg import ModelState
+from gazebo_msgs.srv import SetModelState
 from visualization_msgs.msg import Marker
 from std_msgs.msg import Int16MultiArray
+from beginner_tutorials.srv import *
 
 import tensorflow as tf
 import numpy as np
@@ -31,11 +34,29 @@ class env(object):
         goal_index = random.randint(0, 8)
         self.goal_x = goal[goal_index][0]
         self.goal_y = goal[goal_index][1]
-        msg = [self.goal_x, self.goal_y]
-        goal_rand = rospy.Publisher('goal_Rand', Int16MultiArray, queue_size = 10)
-        goal_rand_msg = Int16MultiArray()
-        goal_rand_msg.data = msg
-        goal_rand.publish(goal_rand_msg)
+
+        # Publish goal information to gazebo
+        gazebo_goal_msg = ModelState()
+        gazebo_goal_msg.model_name = 'Goal'
+        gazebo_goal_msg.pose.position.x = self.goal_x
+        gazebo_goal_msg.pose.position.y = self.goal_y
+        gazebo_goal_msg.pose.position.z = 0.05
+        gazebo_goal_msg.pose.orientation.x = 0
+        gazebo_goal_msg.pose.orientation.y = 0
+        gazebo_goal_msg.pose.orientation.z = 0
+        gazebo_goal_msg.pose.orientation.w = 0
+
+        rospy.wait_for_service('/gazebo/set_model_state')
+
+        gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        resp1 = gazebo_goal_proxy(gazebo_goal_msg)
+
+        # Publish goal information to rviz
+        rospy.wait_for_service('add_two_ints')
+
+        rvi_goal_proxy = rospy.ServiceProxy('add_two_ints', AddTwoInts)
+        resp2 = add_two_ints(self.goal_x, self.goal_y)
+
 
     def set_action(self, action):
         # set publisher
