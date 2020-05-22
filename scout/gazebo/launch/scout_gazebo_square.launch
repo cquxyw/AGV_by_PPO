@@ -6,7 +6,7 @@
     <arg name="debug" default="false"/>
 
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(find scout)/gazebo/worlds/buaa_multi_settle.world"/>
+        <arg name="world_name" value="$(find scout)/gazebo/worlds/buaa_multi_settle1.world"/>
         <arg name="debug" value="$(arg debug)" />
         <arg name="gui" value="$(arg gui)" />
         <arg name="paused" value="$(arg paused)"/>
@@ -19,6 +19,8 @@
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model scout -param robot_description"/> 
 
+    <node pkg="scout" name="RL_input" type="RL_input"/>
+
   <!-- convert joint states to TF transforms for rviz, etc -->
   <!-- <node name="robot_state_publisher2" pkg="robot_state_publisher" type="robot_state_publisher"
 	respawn="false" output="screen">
@@ -27,7 +29,5 @@
   <include file="$(find scout)/description/launch/scout_rviz.launch" /> -->
 
   <!-- <node pkg="vlp_fir" name="do_it" type="do_it"/> -->
-
-  <node pkg="scout" name="RL_input" type="RL_input"/>
 
 </launch>
