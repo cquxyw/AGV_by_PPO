@@ -16,6 +16,7 @@ import subprocess
 import ppo_algo_multi_goal as ppo_algo
 import ppo_env_multi_goal as ppo_env
 
+import threading
 
 EP_MAX = 1000000
 EP_LEN = 384
@@ -82,6 +83,7 @@ if __name__ == '__main__':
 
         env = ppo_env.env()
         env.rand_goal()
+        
         print('Goal is %i, %i' %(env.goal_x, env.goal_y))
 
         save_para(ppo, env, TRAIN_TIME+1)

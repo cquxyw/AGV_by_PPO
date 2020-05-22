@@ -6,11 +6,11 @@ from gazebo_msgs.msg import ContactsState
 from visualization_msgs.msg import Marker
 from std_msgs.msg import Int16MultiArray
 from std_msgs.msg import Int16MultiArray
-from gazebo_msgs.msg import ModelState
-from gazebo_msgs.srv import SetModelState
 
-from gazebo_msgs.msg import LinkState
-from gazebo_msgs.srv import SetLinkState
+from gazebo_msgs.msg import *
+from gazebo_msgs.srv import *
+
+import threading
 
 import tensorflow as tf
 import numpy as np
@@ -31,42 +31,42 @@ class env(object):
 
         self.reach_goal_circle = 0.8
     
-    def rand_goal(self):
-        goal_index = random.randint(0, 8)
-        self.goal_x = goal[goal_index][0]
-        self.goal_y = goal[goal_index][1]
+    def thread(self):
+        while not rospy.is_shutdown():
+            gazebo_goal_msg = SetModelStateRequest()
+            gazebo_goal_msg.model_state.model_name = 'Goal_0'
+            gazebo_goal_msg.model_state.pose.position.x = self.goal_x
+            gazebo_goal_msg.model_state.pose.position.y = self.goal_y
+            gazebo_goal_msg.model_state.pose.position.z = 1
+            gazebo_goal_msg.model_state.pose.orientation.x = 0
+            gazebo_goal_msg.model_state.pose.orientation.y = 0
+            gazebo_goal_msg.model_state.pose.orientation.z = 0
+            gazebo_goal_msg.model_state.pose.orientation.w = 0
+            gazebo_goal_msg.model_state.reference_frame = 'world'
 
-        # Publish goal information to gazebo
-        gazebo_goal_msg = ModelState()
-        gazebo_goal_msg.model_name = 'Goal_0'
-        gazebo_goal_msg.pose.position.x = self.goal_x
-        gazebo_goal_msg.pose.position.y = self.goal_y
-        gazebo_goal_msg.pose.position.z = 1
-        gazebo_goal_msg.pose.orientation.x = 0
-        gazebo_goal_msg.pose.orientation.y = 0
-        gazebo_goal_msg.pose.orientation.z = 0
-        gazebo_goal_msg.pose.orientation.w = 0
+            gazebo_goal_msg1 = SetLinkStateRequest()
+            gazebo_goal_msg1.link_state.link_name = 'Goal_0::link'
+            gazebo_goal_msg1.link_state.pose.position.x = self.goal_x
+            gazebo_goal_msg1.link_state.pose.position.y = self.goal_y
+            gazebo_goal_msg1.link_state.pose.position.z = 1
+            gazebo_goal_msg1.link_state.pose.orientation.x = 0
+            gazebo_goal_msg1.link_state.pose.orientation.y = 0
+            gazebo_goal_msg1.link_state.pose.orientation.z = 0
+            gazebo_goal_msg1.link_state.pose.orientation.w = 0
+            gazebo_goal_msg1.link_state.reference_frame = 'world'
 
-        gazebo_goal_msg1 = LinkState()
-        gazebo_goal_msg1.link_name = 'Goal_0::link'
-        gazebo_goal_msg1.pose.position.x = self.goal_x
-        gazebo_goal_msg1.pose.position.y = self.goal_y
-        gazebo_goal_msg1.pose.position.z = 1
-        gazebo_goal_msg1.pose.orientation.x = 0
-        gazebo_goal_msg1.pose.orientation.y = 0
-        gazebo_goal_msg1.pose.orientation.z = 0
-        gazebo_goal_msg1.pose.orientation.w = 0
+            rospy.wait_for_service('/gazebo/set_model_state')
 
-        rospy.wait_for_service('/gazebo/set_model_state')
-        try:
-            print('Send')
             gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
             gazebo_goal_proxy(gazebo_goal_msg)
 
             gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
             gazebo_goal_proxy1(gazebo_goal_msg1)
-        except rospy.ServiceException:
-            print('fuck')
+    
+    def rand_goal(self):
+        goal_index = random.randint(0, 8)
+        self.goal_x = goal[goal_index][0]
+        self.goal_y = goal[goal_index][1]
 
     def set_action(self, action):
         # set publisher
