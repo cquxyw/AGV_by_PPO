@@ -31,14 +31,10 @@ class env(object):
 
         self.reach_goal_circle = 0.8
     
-    def rand_goal(self):
-        goal_index = random.randint(0, 8)
-        self.goal_x = goal[goal_index][0]
-        self.goal_y = goal[goal_index][1]
+    def gazebo_srv(self):
 
-        # Publish goal information to gazebo
         gazebo_goal_msg = ModelState()
-        gazebo_goal_msg.model_name = 'Goal_0'
+        gazebo_goal_msg.model_name = 'goal'
         gazebo_goal_msg.pose.position.x = self.goal_x
         gazebo_goal_msg.pose.position.y = self.goal_y
         gazebo_goal_msg.pose.position.z = 1
@@ -48,7 +44,7 @@ class env(object):
         gazebo_goal_msg.pose.orientation.w = 0
 
         gazebo_goal_msg1 = LinkState()
-        gazebo_goal_msg1.link_name = 'Goal_0::link'
+        gazebo_goal_msg1.link_name = 'goal::goal'
         gazebo_goal_msg1.pose.position.x = self.goal_x
         gazebo_goal_msg1.pose.position.y = self.goal_y
         gazebo_goal_msg1.pose.position.z = 1
@@ -58,15 +54,17 @@ class env(object):
         gazebo_goal_msg1.pose.orientation.w = 0
 
         rospy.wait_for_service('/gazebo/set_model_state')
-        try:
-            print('Send')
-            gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
-            gazebo_goal_proxy(gazebo_goal_msg)
 
-            gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
-            gazebo_goal_proxy1(gazebo_goal_msg1)
-        except rospy.ServiceException:
-            print('fuck')
+        gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        rep = gazebo_goal_proxy(gazebo_goal_msg)
+
+        gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
+        rep2 = gazebo_goal_proxy1(gazebo_goal_msg1)
+    
+    def rand_goal(self):
+        goal_index = random.randint(0, 8)
+        self.goal_x = goal[goal_index][0]
+        self.goal_y = goal[goal_index][1]
 
     def set_action(self, action):
         # set publisher
@@ -234,3 +232,4 @@ class env(object):
 
     def reset_env(self):
         subprocess.Popen(['rosservice','call','/gazebo/reset_world'])
+        self.gazebo_srv()
