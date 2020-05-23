@@ -12,6 +12,6 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher"/>
 
   <!-- Show in Rviz   -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scout)/description/launch/scout_rviz.rviz"/>
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find scout)/description/launch/scout_rviz2.rviz"/>
 
 </launch>

@@ -33,33 +33,38 @@ class env(object):
     
     def gazebo_srv(self):
 
-        gazebo_goal_msg = ModelState()
-        gazebo_goal_msg.model_name = 'goal'
-        gazebo_goal_msg.pose.position.x = self.goal_x
-        gazebo_goal_msg.pose.position.y = self.goal_y
-        gazebo_goal_msg.pose.position.z = 1
-        gazebo_goal_msg.pose.orientation.x = 0
-        gazebo_goal_msg.pose.orientation.y = 0
-        gazebo_goal_msg.pose.orientation.z = 0
-        gazebo_goal_msg.pose.orientation.w = 0
+        subprocess.Popen(['rosservice','call','/gazebo/set_model_state', '{model_state: { model_name: goal, pose: { position: { x: %i, y: %i ,z: 1 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }' %(self.goal_x, self.goal_y)])
 
-        gazebo_goal_msg1 = LinkState()
-        gazebo_goal_msg1.link_name = 'goal::goal'
-        gazebo_goal_msg1.pose.position.x = self.goal_x
-        gazebo_goal_msg1.pose.position.y = self.goal_y
-        gazebo_goal_msg1.pose.position.z = 1
-        gazebo_goal_msg1.pose.orientation.x = 0
-        gazebo_goal_msg1.pose.orientation.y = 0
-        gazebo_goal_msg1.pose.orientation.z = 0
-        gazebo_goal_msg1.pose.orientation.w = 0
+        # gazebo_goal_msg = ModelState()
+        # gazebo_goal_msg.model_name = 'goal'
+        # gazebo_goal_msg.pose.position.x = self.goal_x
+        # gazebo_goal_msg.pose.position.y = self.goal_y
+        # gazebo_goal_msg.pose.position.z = 1
+        # gazebo_goal_msg.pose.orientation.x = 0
+        # gazebo_goal_msg.pose.orientation.y = 0
+        # gazebo_goal_msg.pose.orientation.z = 0
+        # gazebo_goal_msg.pose.orientation.w = 0
+        # gazebo_goal_msg.reference_frame = 'world'
 
-        rospy.wait_for_service('/gazebo/set_model_state')
 
-        gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
-        rep = gazebo_goal_proxy(gazebo_goal_msg)
+        # gazebo_goal_msg1 = LinkState()
+        # gazebo_goal_msg1.link_name = 'goal::goal'
+        # gazebo_goal_msg1.pose.position.x = self.goal_x
+        # gazebo_goal_msg1.pose.position.y = self.goal_y
+        # gazebo_goal_msg1.pose.position.z = 1
+        # gazebo_goal_msg1.pose.orientation.x = 0
+        # gazebo_goal_msg1.pose.orientation.y = 0
+        # gazebo_goal_msg1.pose.orientation.z = 0
+        # gazebo_goal_msg1.pose.orientation.w = 0
 
-        gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
-        rep2 = gazebo_goal_proxy1(gazebo_goal_msg1)
+        # rospy.wait_for_service('/gazebo/set_model_state')
+        # rospy.wait_for_service('/gazebo/set_link_state')
+
+        # gazebo_goal_proxy = rospy.ServiceProxy('/gazebo/set_model_state', SetModelState)
+        # rep = gazebo_goal_proxy(gazebo_goal_msg)
+
+        # gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
+        # rep2 = gazebo_goal_proxy1(gazebo_goal_msg1)
     
     def rand_goal(self):
         goal_index = random.randint(0, 8)

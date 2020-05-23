@@ -28,7 +28,7 @@ METHOD = [
 
 # save rewards data as npy file of every train
 def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
-    plot_path = '/home/xyw/BUAA/Graduation/src/scout/result/single/img/PPO_%i.npy' %(TRAIN_TIME)
+    plot_path = '/home/xyw/Train_Result/single/img/PPO_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
     PLOT_REWARD = np.append(PLOT_REWARD, ep_r)
     PLOT_RESULT = np.concatenate([[PLOT_EPISODE], [PLOT_REWARD]])
@@ -37,7 +37,7 @@ def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
 
 # save the parameters as csv file of every train
 def save_para(ppo, env, TRAIN_TIME):
-    csvfile = open('/home/xyw/BUAA/Graduation/src/scout/result/single/img/PPO_para.csv', 'a+', newline='')
+    csvfile = open('/home/xyw/Train_Result/single/img/PPO_para.csv', 'a+', newline='')
     writer = csv.writer(csvfile)
     data = ['%i' %(TRAIN_TIME), '%i' %(BATCH), '%.1e' %(ppo.A_LR), '%.1e' %(ppo.C_LR)]
     writer.writerow(data)
@@ -98,6 +98,7 @@ if __name__ == '__main__':
             for t in range(EP_LEN):
 
                 a =  ppo.choose_action(s)
+                print('V: %f ; W: %f' %(a[0], a[1]))
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
                     print('Warning: Action is nan. Restart Train')
@@ -120,23 +121,23 @@ if __name__ == '__main__':
 
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
+                    # print(ppo.alossr, ppo.clossr)
             
                 # When robot is nearby the goal, skip to next episode
                 if collide == 1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
+                    # print(ppo.alossr, ppo.clossr)
                     print('Collision')
                     break
                 
                 if current_dis_from_des_point < env.reach_goal_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
+                    # print(ppo.alossr, ppo.clossr)
                     print('Sucess')
                     break
                 elif current_dis_from_des_point > env.limit_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    print(ppo.alossr, ppo.clossr)
+                    # print(ppo.alossr, ppo.clossr)
                     print('Over-area')
                     break
 

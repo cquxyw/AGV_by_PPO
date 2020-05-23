@@ -89,12 +89,12 @@ class ppo(object):
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        dir_path = '/home/xyw/Train_Result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
         saver = tf.compat.v1.train.Saver()
         saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        model_path = '/home/xyw/Train_Result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
         if os.path.exists(model_path):
             restorer = tf.compat.v1.train.import_meta_graph(model_path+'.meta')
             restorer.restore(self.sess, tf.train.latest_checkpoint(model_path))
