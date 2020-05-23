@@ -24,7 +24,7 @@ class ppo(object):
         # self.A_LR = np.random.rand() * self.C_LR
         # self.C_LR = pow(10, np.random.uniform(-4, -9))
 
-        self.A_LR = pow(10, np.random.uniform(-11, -14))
+        self.A_LR = 1e-7
         self.C_LR = 2 * self.A_LR
 
         self.alossr = 0
@@ -65,7 +65,7 @@ class ppo(object):
         with tf.variable_scope('atrain'):
             self.atrain_op = tf.train.AdamOptimizer(self.A_LR).minimize(self.aloss)
 
-        tf.summary.FileWriter("/home/xyw/BUAA/Graduation/src/scout/result/single/log/", self.sess.graph)
+        tf.summary.FileWriter("/home/xyw/Train_Result/single/log/", self.sess.graph)
         self.sess.run(tf.global_variables_initializer())
         self.saver = tf.train.Saver()
 
@@ -101,11 +101,11 @@ class ppo(object):
         return self.sess.run(self.v, {self.tfs: s})[0, 0]
     
     def save(self, TRAIN_TIME):
-        dir_path = '/home/xyw/BUAA/Graduation/src/scout/result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        dir_path = '/home/xyw/Train_Result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
         self.saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
+        model_path = '/home/xyw/Train_Result/single/model/PPO_%i.ckpt' %(TRAIN_TIME)
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)

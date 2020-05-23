@@ -21,7 +21,7 @@ class env(object):
         self.goal_y = 6
 
         self.limit_circle = 12
-        self.reach_goal_circle = 0.5
+        self.reach_goal_circle = 0.8
         self.limit_overspeed = 12
             
     def set_action(self, action):
@@ -107,35 +107,20 @@ class env(object):
         return state
     
     def compute_reward(self, collide, overspeed, current_dis_from_des_point):
-        current_state_info = self.get_robot_info()
-        # collide = self.get_collision_info()
 
-        # overspeed, current_dis_from_des_point = self.compute_param()
-
-        reward_over_speed = - overspeed
-        reward_dis = - current_dis_from_des_point
-
-        distance_from_des_x = self.goal_x - current_state_info[0]
-        distance_from_des_y = self.goal_y - current_state_info[1]
-        des_yaw = math.atan2(distance_from_des_y, distance_from_des_x)
-        current_yaw = current_state_info[2]
-        diff_yaw = des_yaw - current_yaw
-        reward_diff_yaw = math.sqrt(pow(diff_yaw, 2))
+        reward_dis = - current_dis_from_des_point / 600
 
         # compute reward
-        reward = (reward_over_speed * 0.3 + reward_diff_yaw * 0.3 + reward_dis) * 0.1
+        reward = reward_dis
 
         if collide == 1:
-            reward += -200
+            reward += -1
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 300
-        # elif self.reach_goal_circle < current_dis_from_des_point < 0.8:
-        #     reward += 5
-        
-        # if overspeed > self.limit_overspeed or current_dis_from_des_point > self.limit_circle:
+            reward += 1.5
+
         if current_dis_from_des_point > self.limit_circle:
-            reward += -200
+            reward += -1
             
         return reward
 

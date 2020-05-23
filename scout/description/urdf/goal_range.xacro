@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <robot name="goal" xmlns:xacro="http://www.ros.org/wiki/xacro">
     
-  <!-- <link name="world"/>
+  <!-- <link name="set"/>
 
-  <joint name="fixed" type="continuous">
-    <parent link="world"/>
+  <joint name="fixed" type="fixed">
+    <parent link="set"/>
     <child link="goal"/>
   </joint> -->
 
@@ -19,9 +19,8 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <cylinder radius="0.8" length="500"/>
+        <cylinder radius="0.8" length="3"/>
       </geometry>
-      <material name="green"/>
     </visual>
 
     <inertial>
@@ -33,5 +32,16 @@
         izz="1.0"/>
       </inertial>
   </link>
+
+  <gazebo reference="goal">  
+    <visual>  
+      <material>  
+        <ambient>0 0.5 0 0.01</ambient>  
+        <diffuse>0.46 0.46 0.46 0.5</diffuse>  
+        <specular>0.5 0.5 0.5 32</specular>  
+        <emissive>0.46 0.46 0.46 0.5</emissive>  
+      </material>  
+    </visual>  
+  </gazebo>
 
 </robot>
