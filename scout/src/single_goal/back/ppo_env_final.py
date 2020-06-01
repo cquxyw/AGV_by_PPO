@@ -152,7 +152,14 @@ class env(object):
             elif data.num == 0:
                 current_obs_info = np.zeros([5,4])
         else:
-            current_obs_info = np.array([5,3,0.5,0.5,-2,4,0.5,0.5,-4,5,0.5,0.5,3,-3,0.5,0.5,-7,-1,0.5,0.5,-2,3,0.5,0.5])
+            current_obs_info = np.array([
+                [5,3,0.5,0.5],
+                [-2,4,0.5,0.5],
+                [-4,5,0.5,0.5],
+                [3,-3,0.5,0.5],
+                [-7,-1,0.5,0.5],
+                [-2,3,0.5,0.5]
+            ])
 
         return current_obs_info
     
@@ -194,6 +201,47 @@ class env(object):
         
         return dis_index
     
+    def compute_u(self, car_info, obs_state, goal_state):
+        
+        # param
+        n_goal = 1
+        n_obs = 1
+        safe_dis = 0.5
+        car_circle = 1.1
+
+        obs_len = obs_state[2]
+        obs_wid = obs_state[3]
+
+        # calculate safe range
+        q = max(obs_len, obs_wid) + car_circle + safe_dis
+
+        # calculate distance between car and obstacle
+        dis_obs_x = car_info[0] - obs_state[0]
+        dis_obs_y = car_info[1] - obs_state[1]
+        dis_obs = math.hypot(dis_obs_x, dis_obs_y)
+
+        # calculate distance between car and goal
+        dis_goal_x = car_info[0] - goal_state[0]
+        dis_goal_y = car_info[1] - goal_state[1]
+        dis_goal = math.hypot(dis_goal_x, dis_goal_y)
+
+        # calculate repulsion potential energe
+        if dis_obs > q:
+            ur = 0
+        else:
+            dis_obs = np.clip(dis_obs, 1e-3, 1e+3)
+            ur = n_obs * pow(1/dis_obs - 1/q, 2)
+        
+        # calculate attraction potential energe
+        ua = n_goal * dis_goal
+
+        u_state = ur + ua
+
+        # ori
+        dis_ori = math.hypot(car_info[0], car_info[1])
+
+        return u_state, dis_goal, dis_obs, dis_ori
+    
     def compute_state(self):
         # get car state and obstacles state
         current_state_info = self.get_robot_info()
@@ -204,9 +252,15 @@ class env(object):
         # goal state
         goal_state = np.array([self.goal_x, self.goal_y])
 
-        ## real_env: obstacle state(choose the latest obstacle)
+        # get computed state
+        obs_index = self.choose_obs(current_state_info, current_obs_info)
+        min_obs_state = current_obs_info[obs_index[0]]
+        u_state, dis_goal_state, dis_obs_state, dis_ori = self.compute_u(car_state, min_obs_state, goal_state)
+
+        # end loop state
+        collide = self.get_collision_info()
+
         if real_env == 1:
-            obs_index = self.choose_obs(current_state_info, current_obs_info)
             obs0_state = current_obs_info[obs_index[0]]
             obs1_state = current_obs_info[obs_index[1]]
             obs2_state = current_obs_info[obs_index[2]]
@@ -214,14 +268,23 @@ class env(object):
             obs4_state = current_obs_info[obs_index[4]]
             state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state])
         else:
-            state = np.concatenate([goal_state, car_state, current_obs_info])
+            state = np.concatenate([goal_state, car_state, u_state, dis_goal_state, dis_obs_state, dis_ori, collide])
 
         return state
 
-    def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point, current_dis_from_ori):
+    def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
         # reward = 0
-        reward = (last_dis_from_des_point - current_dis_from_des_point) / 20
+        reward_norm = []
+        reward_all = np.array([d_u, 1])
+        reward_mean = np.mean(reward_all)
+        reward_var = np.var(reward_all)
+        reward_var_s = np.sqrt(reward_var)
+        for i in range(np.shape(reward_all)[0]):
+            reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
+
+        # compute reward in process
+        reward = reward_norm[0] / 320
 
         if collide == 1:
             reward += -1

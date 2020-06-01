@@ -7,7 +7,7 @@ import logging
 GAMMA = 0.9
 A_UPDATE_STEPS = 30
 C_UPDATE_STEPS = 30
-S_DIM = 31
+S_DIM = 12
 A_DIM = 2
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty

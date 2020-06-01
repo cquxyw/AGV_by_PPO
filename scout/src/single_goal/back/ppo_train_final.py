@@ -98,7 +98,8 @@ if __name__ == '__main__':
             goal_index = 1
             env.choose_goal(goal_index)
             
-            last_dis_from_des_point, last_dis_from_ori = env.compute_param()
+            last_u_state = s[7]
+            # last_dis_from_des_point, last_dis_from_ori = env.compute_param()
 
             buffer_s = []
             buffer_a = []
@@ -126,13 +127,19 @@ if __name__ == '__main__':
 
                 s_= env.compute_state()
 
-                collide = env.get_collision_info()
-                current_dis_from_des_point, current_dis_from_ori = env.compute_param()
+                collide = s_[11]
+                current_dis_from_des_point = s_[8]
+                current_dis_from_ori = s_[10]
+
+                u_state = s_[7]
+                print('u_state: %i' %(u_state))
+                d_u = last_u_state - u_state
+                print('d_u: %i' %(d_u))
 
                 # collide, current_dis_from_des_point to judge whether it is end of episode
-                r = env.compute_reward(collide, current_dis_from_des_point, last_dis_from_des_point, current_dis_from_ori)
+                r = env.compute_reward(collide, current_dis_from_des_point, current_dis_from_ori, d_u)
 
-                last_dis_from_des_point = current_dis_from_des_point
+                last_u_state = u_state
 
                 ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
 
@@ -155,7 +162,6 @@ if __name__ == '__main__':
                 if current_dis_from_des_point < env.reach_goal_circle:
                     if goal_index == 1:
                         update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                        last_dis_from_des_point, last_dis_from_ori = env.compute_param()
                         print('Reach goal')
                         goal_index = 0
                         env.choose_goal(goal_index)
@@ -163,7 +169,6 @@ if __name__ == '__main__':
 
                     if goal_index == 0:
                         update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                        last_dis_from_des_point, last_dis_from_ori = env.compute_param()
                         print('Sucess return')
                         break
             
@@ -175,7 +180,7 @@ if __name__ == '__main__':
                 if current_dis_from_ori > 12:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Out range')
-                    break                   
+                    break
             
             # Set the beginning action of robot in next episode, or it would be set by last time
             ap = env.set_action(a_init)
