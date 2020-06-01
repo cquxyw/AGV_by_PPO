@@ -2,6 +2,7 @@ import rospy
 import random
 from scout.msg import RL_input_msgs
 from geometry_msgs.msg import Twist
+from visualization_msgs.msg import Marker
 
 import tensorflow as tf
 import numpy as np
@@ -12,13 +13,14 @@ import os
 import csv
 
 import subprocess
-import ppo_algo_tf1 as ppo_algo
-import ppo_env
+import ppo_algo_final as ppo_algo
+import ppo_env_final as ppo_env
 
+import threading
 
 EP_MAX = 1000000
-EP_LEN = 320
-BATCH = 32
+EP_LEN = 384
+BATCH = 64
 GAMMA = 0.9
 
 METHOD = [
@@ -28,7 +30,7 @@ METHOD = [
 
 # save rewards data as npy file of every train
 def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
-    plot_path = '/home/xyw/Train_Result/single/img/PPO_%i.npy' %(TRAIN_TIME)
+    plot_path = 'Train_Result/single/img/PPO_final_%i.npy' %(TRAIN_TIME)
     PLOT_EPISODE = np.append(PLOT_EPISODE, ep)
     PLOT_REWARD = np.append(PLOT_REWARD, ep_r)
     PLOT_RESULT = np.concatenate([[PLOT_EPISODE], [PLOT_REWARD]])
@@ -37,7 +39,7 @@ def save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD):
 
 # save the parameters as csv file of every train
 def save_para(ppo, env, TRAIN_TIME):
-    csvfile = open('/home/xyw/Train_Result/single/img/PPO_para.csv', 'a+', newline='')
+    csvfile = open('Train_Result/single/img/PPO_final_para.csv', 'a+', newline='')
     writer = csv.writer(csvfile)
     data = ['%i' %(TRAIN_TIME), '%i' %(BATCH), '%.1e' %(ppo.A_LR), '%.1e' %(ppo.C_LR)]
     writer.writerow(data)
@@ -65,7 +67,7 @@ if __name__ == '__main__':
     for TRAIN_TIME in range(50):
 
         PLOT_EPISODE = np.array([],dtype = int)
-        PLOT_REWARD = np.array([], dtype = int)
+        PLOT_REWARD = np.array([], dtype = float)
 
         # if BREAK = 0, means action is not 'nan'.
         # if BREAK = 1, means action is 'nan', reset ppo and env to another train.
@@ -73,80 +75,104 @@ if __name__ == '__main__':
 
         # 1. fix LR: Change LR in ppo_algo.py, and uncomment restore function.
         # 2. random LR: Change LR in ppo_algo.py, and conmment restore function.
-        ppo = ppo_algo.ppo()
+        ppo = ppo_algo.ppo(TRAIN_TIME)
         print('\n Training Start')
 
-        ppo.restore(TRAIN_TIME)
+        # 0: basic model
+        ppo.restore(0)
 
         env = ppo_env.env()
+        env.choose_goal(1)
+        
+        print('Goal is %i, %i' %(env.goal_x, env.goal_y))
 
-        save_para(ppo, env, TRAIN_TIME)
+        # save_para(ppo, env, TRAIN_TIME+1)
 
         all_ep_r = []
 
         for ep in range(EP_MAX):
+
             a_init = [0, 0]
             s = env.set_init_pose()
+
+            goal_index = 1
+            
+            last_dis_from_des_point = env.compute_param()
 
             buffer_s = []
             buffer_a = []
             buffer_r = []
 
             ep_r = 0
-            time.sleep(0.1)
+            time.sleep(0.5)
 
             for t in range(EP_LEN):
 
                 a =  ppo.choose_action(s)
-                print('V: %f ; W: %f' %(a[0], a[1]))
+
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
+
+                    # record the information of nan situation in order to find out which part has problem
+                    ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
+
                     print('Warning: Action is nan. Restart Train')
                     break
                     # os._exit(0)
+
                 env.set_action(a)
 
                 s_= env.compute_state()
 
                 collide = env.get_collision_info()
-                overspeed, current_dis_from_des_point = env.compute_param()
+                current_dis_from_des_point = env.compute_param()
 
-                r = env.compute_reward(collide, overspeed, current_dis_from_des_point)
+                # collide, current_dis_from_des_point to judge whether it is end of episode
+                r = env.compute_reward(collide, current_dis_from_des_point, last_dis_from_des_point)
 
-                buffer_s.append(s)
+                last_dis_from_des_point = current_dis_from_des_point
+
+                ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
+
+                if ep == 0:
+                    s_buff = s[np.newaxis, ...]
+
+                s_buff = s_[np.newaxis, ...]
+
+                buffer_s.append(s_buff)
                 buffer_a.append(a)
-                buffer_r.append((r+8)/8)    # normalize reward, find to be useful
+                buffer_r.append(r)
                 s = s_
                 ep_r += r
-
+                
+                # Batch end normally
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    # print(ppo.alossr, ppo.clossr)
+
+                # Batch end with special behaviors
+                if current_dis_from_des_point < env.reach_goal_circle:
+                    if goal_index == 1:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        last_dis_from_des_point = env.compute_param()
+                        print('Reach goal')
+                        goal_index = 0
+                        env.choose_goal(goal_index)
+                        continue
+                    if goal_index == 0:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        last_dis_from_des_point = env.compute_param()
+                        print('Sucess return')
+                        break
             
-                # When robot is nearby the goal, skip to next episode
                 if collide == 1:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    # print(ppo.alossr, ppo.clossr)
                     print('Collision')
                     break
-                
-                if current_dis_from_des_point < env.reach_goal_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    # print(ppo.alossr, ppo.clossr)
-                    print('Sucess')
-                    break
-                elif current_dis_from_des_point > env.limit_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    # print(ppo.alossr, ppo.clossr)
-                    print('Over-area')
-                    break
 
-                # if speed is too high, skip to next episode
-                # if overspeed > env.limit_overspeed:
-                #     update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                #     print(ppo.alossr, ppo.clossr)
-                #     print('Over-speed')
-                #     break                   
+                if current_dis_from_des_point > 12:
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    print('Out range')
+                    break                   
             
             # Set the beginning action of robot in next episode, or it would be set by last time
             env.set_action(a_init)
@@ -156,21 +182,21 @@ if __name__ == '__main__':
             else: all_ep_r.append(all_ep_r[-1]*0.9 + ep_r*0.1)
             print(
                 'Ep: %i' % ep,
-                "|Ep_r: %i" % ep_r,
+                "|Ep_r: %.3f" % ep_r,
                 ("|Lam: %.4f" % METHOD['lam']) if METHOD['name'] == 'kl_pen' else '',
             )
+
+            # Save reward data for plot
+            PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
             
-            # Save model and plot
-            PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME+1, PLOT_EPISODE, PLOT_REWARD)
-            
-            if ep % 200 == 0:
+            # Save model
+            if ep % 50 == 0:
                  ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment
             env.reset_env()
             
             if BREAK == 1:
-                print(ppo.alossr, ppo.clossr)
                 break
         
         ppo.resetgraph()

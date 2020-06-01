@@ -22,7 +22,7 @@
     args="-urdf -model scout -param robot_description"/> 
 
     <node name="urdf_spawner2" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model scout -param goal_description"/> 
+    args="-urdf -model goal -param goal_description"/> 
 
     <node pkg="scout" name="RL_input" type="RL_input"/>
 

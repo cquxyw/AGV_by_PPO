@@ -21,7 +21,7 @@ import os
 import subprocess
 
 real_env = 0
-goal = [(3,0),(2,-6),(3,-8),(6,0),(-1,5),(-6,1),(-6,3),(-6,-7),(-4,-6)]
+goal = [(0,0),(6,0)]
 
 class env(object):
 
@@ -65,10 +65,18 @@ class env(object):
         # gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
         # rep2 = gazebo_goal_proxy1(gazebo_goal_msg1)
         
-    def rand_goal(self):
-        goal_index = random.randint(0, 8)
+    def choose_goal(self, goal):
+        goal_index = goal
         self.goal_x = goal[goal_index][0]
         self.goal_y = goal[goal_index][1]
+
+        # rospy.wait_for_service('goal_sent')
+        # try:
+        #     goal_sent = rospy.ServiceProxy('goal_sent', goal_srv)
+        #     resp = goal_sent(self.goal_x, self.goal_y)
+        #     return resp.suc
+        # except:
+        #     print('Goal sent fail')
 
     def set_action(self, action):
         # set publisher
@@ -219,13 +227,16 @@ class env(object):
     def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point):
 
         # reward = 0
-        reward = (last_dis_from_des_point - current_dis_from_des_point) / 10
+        reward = (last_dis_from_des_point - current_dis_from_des_point) / 20
 
         if collide == 1:
             reward += -1
 
         if current_dis_from_des_point < self.reach_goal_circle:
             reward += 1
+
+        if current_dis_from_des_point > 12:
+            reward += -1
             
         return reward
 
