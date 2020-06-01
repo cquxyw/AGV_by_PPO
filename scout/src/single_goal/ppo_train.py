@@ -17,7 +17,7 @@ import ppo_env
 
 
 EP_MAX = 1000000
-EP_LEN = 320
+EP_LEN = 160
 BATCH = 32
 GAMMA = 0.9
 
@@ -156,14 +156,14 @@ if __name__ == '__main__':
             else: all_ep_r.append(all_ep_r[-1]*0.9 + ep_r*0.1)
             print(
                 'Ep: %i' % ep,
-                "|Ep_r: %i" % ep_r,
+                "|Ep_r: %f" % ep_r,
                 ("|Lam: %.4f" % METHOD['lam']) if METHOD['name'] == 'kl_pen' else '',
             )
             
             # Save model and plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME+1, PLOT_EPISODE, PLOT_REWARD)
             
-            if ep % 200 == 0:
+            if ep % 50 == 0:
                  ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment

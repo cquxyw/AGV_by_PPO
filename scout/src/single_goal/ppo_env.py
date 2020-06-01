@@ -108,7 +108,15 @@ class env(object):
     
     def compute_reward(self, collide, overspeed, current_dis_from_des_point):
 
-        reward_dis = - current_dis_from_des_point / 600
+        reward_norm = []
+        reward_all = np.array([current_dis_from_des_point, 1])
+        reward_mean = np.mean(reward_all)
+        reward_var = np.var(reward_all)
+        reward_var_s = np.sqrt(reward_var)
+        for i in range(np.shape(reward_all)[0]):
+            reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
+
+        reward_dis = - reward_norm[0] / 160
 
         # compute reward
         reward = reward_dis
