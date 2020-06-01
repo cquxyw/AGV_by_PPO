@@ -21,7 +21,7 @@ class ppo(object):
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
         self.TRAIN_TIME = TRAIN_TIME
 
-        self.A_LR = 1e-5 * pow(0.8, self.TRAIN_TIME)
+        self.A_LR = 1.2e-5 * pow(0.8, self.TRAIN_TIME)
         self.C_LR = 2 * self.A_LR
 
         # define logger
@@ -40,11 +40,11 @@ class ppo(object):
         # critic
         with tf.variable_scope('critic'):
 
-            l1 = tf.layers.dense(self.tfs, 256, tf.nn.relu)
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            # l2 = tf.layers.dense(l1, 128, tf.nn.relu)
 
-            self.v = tf.layers.dense(l2, 1)
+            self.v = tf.layers.dense(l1, 1)
             self.tfdc_r = tf.placeholder(tf.float32, [None, 1], 'discounted_r')
             self.advantage = self.tfdc_r - self.v
             self.closs = tf.reduce_mean(tf.square(self.advantage))
@@ -99,13 +99,13 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
 
-            l1 = tf.layers.dense(self.tfs, 256, tf.nn.relu)
+            l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu)
 
-            l2 = tf.layers.dense(l1, 128, tf.nn.relu)
+            # l2 = tf.layers.dense(l1, 128, tf.nn.relu)
 
             a_w = tf.glorot_uniform_initializer()
-            mu = 1.5 * tf.layers.dense(l2, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
-            sigma = tf.layers.dense(l2, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-3
+            mu = 1.5 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, kernel_initializer = a_w, trainable=trainable)
+            sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, kernel_initializer = a_w, trainable=trainable) + 1e-3
 
             norm_dist = tf.distributions.Normal(loc = mu, scale = sigma, validate_args= False)
 

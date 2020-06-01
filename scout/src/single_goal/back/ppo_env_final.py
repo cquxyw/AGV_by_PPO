@@ -21,7 +21,7 @@ import os
 import subprocess
 
 real_env = 0
-goal = [(0,0),(6,0)]
+goal = [(0,0),(-6,-7)]
 
 class env(object):
 
@@ -65,18 +65,9 @@ class env(object):
         # gazebo_goal_proxy1 = rospy.ServiceProxy('/gazebo/set_link_state', SetLinkState)
         # rep2 = gazebo_goal_proxy1(gazebo_goal_msg1)
         
-    def choose_goal(self, goal):
-        goal_index = goal
+    def choose_goal(self, goal_index):
         self.goal_x = goal[goal_index][0]
         self.goal_y = goal[goal_index][1]
-
-        # rospy.wait_for_service('goal_sent')
-        # try:
-        #     goal_sent = rospy.ServiceProxy('goal_sent', goal_srv)
-        #     resp = goal_sent(self.goal_x, self.goal_y)
-        #     return resp.suc
-        # except:
-        #     print('Goal sent fail')
 
     def set_action(self, action):
         # set publisher
@@ -98,6 +89,7 @@ class env(object):
             pub.publish(pub_msg)
         else:
             print('Warning: Action is NAN')
+        return action
 
     def get_robot_info(self):
         data = rospy.wait_for_message('RLin', RL_input_msgs)
@@ -179,7 +171,9 @@ class env(object):
         vec_des_point = np.array([self.goal_x, self.goal_y])
         current_dis_from_des_point = np.linalg.norm(vec_des_point - vec_current_point)
 
-        return current_dis_from_des_point
+        current_dis_from_ori = np.linalg.norm(vec_current_point)
+
+        return current_dis_from_des_point, current_dis_from_ori
     
     def choose_obs(self, car_info, obs_info):
         dis_obs_list = dict()
@@ -224,7 +218,7 @@ class env(object):
 
         return state
 
-    def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point):
+    def compute_reward(self, collide, current_dis_from_des_point, last_dis_from_des_point, current_dis_from_ori):
 
         # reward = 0
         reward = (last_dis_from_des_point - current_dis_from_des_point) / 20
@@ -235,7 +229,7 @@ class env(object):
         if current_dis_from_des_point < self.reach_goal_circle:
             reward += 1
 
-        if current_dis_from_des_point > 12:
+        if current_dis_from_ori > 12:
             reward += -1
             
         return reward
@@ -247,4 +241,4 @@ class env(object):
 
     def reset_env(self):
         subprocess.Popen(['rosservice','call','/gazebo/reset_world'])
-        self.gazebo_srv()
+        # self.gazebo_srv()
