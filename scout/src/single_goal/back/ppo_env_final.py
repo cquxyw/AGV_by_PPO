@@ -20,7 +20,7 @@ import os
 
 import subprocess
 
-real_env = 1
+real_env = 0
 goal = [(0,0),(-6,-7)]
 
 class env(object):
@@ -98,6 +98,7 @@ class env(object):
     
     def get_obs_info(self):
 
+        data = rospy.wait_for_message('obj_', obs_info)
         ## simple application
         if real_env == 1:
             current_obs_info = np.empty([1,4])
@@ -110,52 +111,6 @@ class env(object):
                 add_obs = np.zeros([data.num, 4])
                 current_obs_info = np.concatenate([current_obs_info, add_obs])
             return current_obs_info
-
-        ## real environment
-        # if real_env == 1:
-        #     data = rospy.wait_for_message('obj_', obs_info)
-        #     if data.num >= 5:
-        #         current_obs_info = np.array([
-        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
-        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
-        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
-        #             [data.x[3], data.y[3], data.len[3], data.width[3]],
-        #             [data.x[4], data.y[4], data.len[4], data.width[4]]
-        #         ])
-        #     elif data.num == 4:
-        #         current_obs_info = np.array([
-        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
-        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
-        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
-        #             [data.x[3], data.y[3], data.len[3], data.width[3]],
-        #             [0, 0, 0, 0]
-        #         ])
-        #     elif data.num == 3:
-        #         current_obs_info = np.array([
-        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
-        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
-        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0]
-        #         ])
-        #     elif data.num == 2:
-        #         current_obs_info = np.array([
-        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
-        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0]
-        #         ])
-        #     elif data.num == 1:
-        #         current_obs_info = np.array([
-        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0],
-        #             [0, 0, 0, 0]
-        #         ])
-        #     elif data.num == 0:
-        #         current_obs_info = np.zeros([5,4])
 
         else:
             current_obs_info = np.array([
@@ -222,8 +177,8 @@ class env(object):
         q = max(obs_len, obs_wid) + car_circle + safe_dis
 
         # calculate distance between car and obstacle
-        dis_obs_x = car_info[0] - obs_state[0]
-        dis_obs_y = car_info[1] - obs_state[1]
+        dis_obs_x = obs_state[0] - car_info[0]
+        dis_obs_y = obs_state[1] - car_info[1]
         dis_obs = math.hypot(dis_obs_x, dis_obs_y)
 
         # calculate orientation between car and obstacle
@@ -235,8 +190,8 @@ class env(object):
             ori_obs = math.atan(dis_obs_y/dis_obs_x) - 3.14
 
         # calculate distance between car and goal
-        dis_goal_x = car_info[0] - goal_state[0]
-        dis_goal_y = car_info[1] - goal_state[1]
+        dis_goal_x = goal_state[0] - car_info[0]
+        dis_goal_y = goal_state[1] - car_info[1]
         dis_goal = math.hypot(dis_goal_x, dis_goal_y)
 
         # calculate orientation between car and goal
@@ -288,24 +243,22 @@ class env(object):
             obs2_state = current_obs_info[obs_index[2]]
             obs3_state = current_obs_info[obs_index[3]]
             obs4_state = current_obs_info[obs_index[4]]
-            state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [ori_obs], [ori_goal]])
+            state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [ori_obs], [ori_goal], [collide]])
         else:
-            state = np.concatenate([goal_state, car_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [collide]])
+            obs0_state = current_obs_info[obs_index[0]]
+            obs1_state = current_obs_info[obs_index[1]]
+            obs2_state = current_obs_info[obs_index[2]]
+            obs3_state = current_obs_info[obs_index[3]]
+            obs4_state = current_obs_info[obs_index[4]]
+            state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [ori_obs], [ori_goal], [collide]])
 
         return state
 
     def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
-        # reward_norm = []
-        # reward_all = np.array([d_u, 1])
-        # reward_mean = np.mean(reward_all)
-        # reward_var = np.var(reward_all)
-        # reward_var_s = np.sqrt(reward_var)
-        # for i in range(np.shape(reward_all)[0]):
-        #     reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
-
-        # compute reward in process
-        reward = d_u / 80
+        norm = np.array([d_u, 1, -1])
+        norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
+        reward = norm_d_u / 320
 
         if collide == 1:
             reward += -1
