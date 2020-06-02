@@ -205,8 +205,8 @@ class env(object):
         
         # param
         n_goal = 1
-        n_obs = 1
-        safe_dis = 0.5
+        n_obs = 5
+        safe_dis = 0.8
         car_circle = 1.1
 
         obs_len = obs_state[2]
@@ -268,23 +268,22 @@ class env(object):
             obs4_state = current_obs_info[obs_index[4]]
             state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state])
         else:
-            state = np.concatenate([goal_state, car_state, u_state, dis_goal_state, dis_obs_state, dis_ori, collide])
+            state = np.concatenate([goal_state, car_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [collide]])
 
         return state
 
     def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
-        # reward = 0
-        reward_norm = []
-        reward_all = np.array([d_u, 1])
-        reward_mean = np.mean(reward_all)
-        reward_var = np.var(reward_all)
-        reward_var_s = np.sqrt(reward_var)
-        for i in range(np.shape(reward_all)[0]):
-            reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
+        # reward_norm = []
+        # reward_all = np.array([d_u, 1])
+        # reward_mean = np.mean(reward_all)
+        # reward_var = np.var(reward_all)
+        # reward_var_s = np.sqrt(reward_var)
+        # for i in range(np.shape(reward_all)[0]):
+        #     reward_norm.append((reward_all[i] - reward_mean)/reward_var_s)
 
         # compute reward in process
-        reward = reward_norm[0] / 320
+        reward = d_u / 80
 
         if collide == 1:
             reward += -1

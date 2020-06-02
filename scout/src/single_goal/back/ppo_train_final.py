@@ -126,15 +126,16 @@ if __name__ == '__main__':
                 print('v: %f ; w: %f' %(ap[0],ap[1]))
 
                 s_= env.compute_state()
+                # print(s_)
 
                 collide = s_[11]
                 current_dis_from_des_point = s_[8]
                 current_dis_from_ori = s_[10]
 
                 u_state = s_[7]
-                print('u_state: %i' %(u_state))
+                print('u_state: %f' %(u_state))
                 d_u = last_u_state - u_state
-                print('d_u: %i' %(d_u))
+                print('d_u: %f' %(d_u))
 
                 # collide, current_dis_from_des_point to judge whether it is end of episode
                 r = env.compute_reward(collide, current_dis_from_des_point, current_dis_from_ori, d_u)
