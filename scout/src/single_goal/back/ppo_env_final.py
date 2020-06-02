@@ -20,7 +20,7 @@ import os
 
 import subprocess
 
-real_env = 0
+real_env = 1
 goal = [(0,0),(-6,-7)]
 
 class env(object):
@@ -99,58 +99,64 @@ class env(object):
     def get_obs_info(self):
 
         ## simple application
-        # current_obs_info = np.empty([1,4])
-        # for i in range(data.num):
-        #     iobs = [data.x[i], data.y[i], data.len[i], data.width[i]]
-        #     current_obs_info = np.vstack([current_obs_info, iobs])
-        # current_obs_info = np.delete(current_obs_info, 0, 0)
-        # return current_obs_info
+        if real_env == 1:
+            current_obs_info = np.empty([1,4])
+            for i in range(data.num):
+                iobs = [data.x[i], data.y[i], data.len[i], data.width[i]]
+                current_obs_info = np.vstack([current_obs_info, iobs])
+            current_obs_info = np.delete(current_obs_info, 0, 0)
+
+            if data.num < 5:
+                add_obs = np.zeros([data.num, 4])
+                current_obs_info = np.concatenate([current_obs_info, add_obs])
+            return current_obs_info
 
         ## real environment
-        if real_env == 1:
-            data = rospy.wait_for_message('obj_', obs_info)
-            if data.num >= 5:
-                current_obs_info = np.array([
-                    [data.x[0], data.y[0], data.len[0], data.width[0]],
-                    [data.x[1], data.y[1], data.len[1], data.width[1]],
-                    [data.x[2], data.y[2], data.len[2], data.width[2]],
-                    [data.x[3], data.y[3], data.len[3], data.width[3]],
-                    [data.x[4], data.y[4], data.len[4], data.width[4]]
-                ])
-            elif data.num == 4:
-                current_obs_info = np.array([
-                    [data.x[0], data.y[0], data.len[0], data.width[0]],
-                    [data.x[1], data.y[1], data.len[1], data.width[1]],
-                    [data.x[2], data.y[2], data.len[2], data.width[2]],
-                    [data.x[3], data.y[3], data.len[3], data.width[3]],
-                    [0, 0, 0, 0]
-                ])
-            elif data.num == 3:
-                current_obs_info = np.array([
-                    [data.x[0], data.y[0], data.len[0], data.width[0]],
-                    [data.x[1], data.y[1], data.len[1], data.width[1]],
-                    [data.x[2], data.y[2], data.len[2], data.width[2]],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0]
-                ])
-            elif data.num == 2:
-                current_obs_info = np.array([
-                    [data.x[0], data.y[0], data.len[0], data.width[0]],
-                    [data.x[1], data.y[1], data.len[1], data.width[1]],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0]
-                ])
-            elif data.num == 1:
-                current_obs_info = np.array([
-                    [data.x[0], data.y[0], data.len[0], data.width[0]],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0],
-                    [0, 0, 0, 0]
-                ])
-            elif data.num == 0:
-                current_obs_info = np.zeros([5,4])
+        # if real_env == 1:
+        #     data = rospy.wait_for_message('obj_', obs_info)
+        #     if data.num >= 5:
+        #         current_obs_info = np.array([
+        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
+        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
+        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
+        #             [data.x[3], data.y[3], data.len[3], data.width[3]],
+        #             [data.x[4], data.y[4], data.len[4], data.width[4]]
+        #         ])
+        #     elif data.num == 4:
+        #         current_obs_info = np.array([
+        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
+        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
+        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
+        #             [data.x[3], data.y[3], data.len[3], data.width[3]],
+        #             [0, 0, 0, 0]
+        #         ])
+        #     elif data.num == 3:
+        #         current_obs_info = np.array([
+        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
+        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
+        #             [data.x[2], data.y[2], data.len[2], data.width[2]],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0]
+        #         ])
+        #     elif data.num == 2:
+        #         current_obs_info = np.array([
+        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
+        #             [data.x[1], data.y[1], data.len[1], data.width[1]],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0]
+        #         ])
+        #     elif data.num == 1:
+        #         current_obs_info = np.array([
+        #             [data.x[0], data.y[0], data.len[0], data.width[0]],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0],
+        #             [0, 0, 0, 0]
+        #         ])
+        #     elif data.num == 0:
+        #         current_obs_info = np.zeros([5,4])
+
         else:
             current_obs_info = np.array([
                 [5,3,0.5,0.5],
@@ -220,10 +226,26 @@ class env(object):
         dis_obs_y = car_info[1] - obs_state[1]
         dis_obs = math.hypot(dis_obs_x, dis_obs_y)
 
+        # calculate orientation between car and obstacle
+        if dis_obs_x > 0:
+            ori_obs = math.atan(dis_obs_y / dis_obs_x)
+        elif dis_obs_x < 0 and dis_obs_y > 0:
+            ori_obs = math.atan(dis_obs_y/dis_obs_x) + 3.14
+        elif dis_obs_x < 0 and dis_obs_y < 0:
+            ori_obs = math.atan(dis_obs_y/dis_obs_x) - 3.14
+
         # calculate distance between car and goal
         dis_goal_x = car_info[0] - goal_state[0]
         dis_goal_y = car_info[1] - goal_state[1]
         dis_goal = math.hypot(dis_goal_x, dis_goal_y)
+
+        # calculate orientation between car and goal
+        if dis_goal_x > 0:
+            ori_goal = math.atan(dis_goal_y / dis_goal_x)
+        elif dis_goal_x < 0 and dis_goal_y > 0:
+            ori_goal = math.atan(dis_goal_y / dis_goal_x) + 3.14
+        elif dis_goal_x < 0 and dis_goal_y < 0:
+            ori_goal = math.atan(dis_goal_y / dis_goal_x) - 3.14
 
         # calculate repulsion potential energe
         if dis_obs > q:
@@ -240,7 +262,7 @@ class env(object):
         # ori
         dis_ori = math.hypot(car_info[0], car_info[1])
 
-        return u_state, dis_goal, dis_obs, dis_ori
+        return u_state, dis_goal, dis_obs, dis_ori, ori_obs, ori_goal
     
     def compute_state(self):
         # get car state and obstacles state
@@ -255,7 +277,7 @@ class env(object):
         # get computed state
         obs_index = self.choose_obs(current_state_info, current_obs_info)
         min_obs_state = current_obs_info[obs_index[0]]
-        u_state, dis_goal_state, dis_obs_state, dis_ori = self.compute_u(car_state, min_obs_state, goal_state)
+        u_state, dis_goal_state, dis_obs_state, dis_ori, ori_obs, ori_goal = self.compute_u(car_state, min_obs_state, goal_state)
 
         # end loop state
         collide = self.get_collision_info()
@@ -266,7 +288,7 @@ class env(object):
             obs2_state = current_obs_info[obs_index[2]]
             obs3_state = current_obs_info[obs_index[3]]
             obs4_state = current_obs_info[obs_index[4]]
-            state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state])
+            state = np.concatenate([goal_state, car_state, obs0_state, obs1_state, obs2_state, obs3_state, obs4_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [ori_obs], [ori_goal]])
         else:
             state = np.concatenate([goal_state, car_state, [u_state], [dis_goal_state], [dis_obs_state], [dis_ori], [collide]])
 
