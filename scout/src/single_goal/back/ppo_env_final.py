@@ -153,12 +153,14 @@ class env(object):
             dis_x = car_info[0] - obs_x
             dis_y = car_info[1] - obs_y
             dis_obs = math.hypot(dis_x, dis_y)
-            dis_obs_list[i] = dis_obs
+            dis_obs = np.clip(dis_obs, 1e-2, 1e+2)
+            dis_cul = (obs_info[i][2] + obs_info[i][3]) / dis_obs
+            dis_obs_list[i] = dis_cul
 
         # sort distance obstacle index
         dis_obs_order = sorted(dis_obs_list.items(), key=lambda x:x[1])
         dis_obs_order_list = list(dis_obs_order)
-        dis_index = [dis_obs_order_list[0][0], dis_obs_order_list[1][0], dis_obs_order_list[2][0], dis_obs_order_list[3][0], dis_obs_order_list[4][0]]
+        dis_index = [dis_obs_order_list[-1][0], dis_obs_order_list[-2][0], dis_obs_order_list[-3][0], dis_obs_order_list[-4][0], dis_obs_order_list[-5][0]]
         
         return dis_index
     
@@ -203,7 +205,7 @@ class env(object):
             ori_goal = math.atan(dis_goal_y / dis_goal_x) - 3.14
 
         # calculate repulsion potential energe
-        if dis_obs > q:
+        if dis_obs > q and max(obs_len, obs_wid) == 0:
             ur = 0
         else:
             dis_obs = np.clip(dis_obs, 1e-3, 1e+3)
