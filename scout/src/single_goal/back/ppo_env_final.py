@@ -20,7 +20,7 @@ import os
 
 import subprocess
 
-real_env = 0
+real_env = 1
 goal = [(0,0),(-6,-7)]
 
 class env(object):
@@ -108,7 +108,7 @@ class env(object):
             current_obs_info = np.delete(current_obs_info, 0, 0)
 
             if data.num < 5:
-                add_obs = np.zeros([data.num, 4])
+                add_obs = np.zeros([5-data.num, 4])
                 current_obs_info = np.concatenate([current_obs_info, add_obs])
             return current_obs_info
 
@@ -154,7 +154,10 @@ class env(object):
             dis_y = car_info[1] - obs_y
             dis_obs = math.hypot(dis_x, dis_y)
             dis_obs = np.clip(dis_obs, 1e-2, 1e+2)
-            dis_cul = (obs_info[i][2] + obs_info[i][3]) / dis_obs
+            if obs_info[i][2] == 0 and obs_info[i][3] == 0:
+                dis_cul = 0
+            else:
+                dis_cul = 1 / dis_obs
             dis_obs_list[i] = dis_cul
 
         # sort distance obstacle index
@@ -168,15 +171,16 @@ class env(object):
         
         # param
         n_goal = 1
-        n_obs = 5
-        safe_dis = 0.8
+        n_obs = 15
+
+        safe_dis = 1
         car_circle = 1.1
 
         obs_len = obs_state[2]
         obs_wid = obs_state[3]
 
         # calculate safe range
-        q = max(obs_len, obs_wid) + car_circle + safe_dis
+        q = (0.5 + car_circle)/2 + safe_dis
 
         # calculate distance between car and obstacle
         dis_obs_x = obs_state[0] - car_info[0]
@@ -205,11 +209,12 @@ class env(object):
             ori_goal = math.atan(dis_goal_y / dis_goal_x) - 3.14
 
         # calculate repulsion potential energe
-        if dis_obs > q and max(obs_len, obs_wid) == 0:
+        if dis_obs > q or max(obs_len, obs_wid) == 0:
             ur = 0
         else:
-            dis_obs = np.clip(dis_obs, 1e-3, 1e+3)
+            dis_obs = np.clip(dis_obs, (0.5 + car_circle)/2, 1e3)
             ur = n_obs * pow(1/dis_obs - 1/q, 2)
+        ur = np.clip(ur, 0, 20)
         
         # calculate attraction potential energe
         ua = n_goal * dis_goal

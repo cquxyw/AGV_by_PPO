@@ -137,6 +137,7 @@ class ppo(object):
     
     def write_log(self, TRAIN_TIME, ep, t, a, s, r):
 
+        state = s 
         s = s[np.newaxis, :]
 
         # run tf node to get information 
@@ -145,7 +146,7 @@ class ppo(object):
 
         # write into logger
         self.logger.info('Train_time: {TRAIN_TIME} -- Epoch: {ep} -- time: {t}'
-                        # '\n State: {state}'
+                        '\n State: {state}'
                         # '\n Actor: {actor}'
                         # '\n Reward: {reward}'
                         '\n Actor_Loss: {aloss} -- Critic_Loss: {closs}'
@@ -157,6 +158,7 @@ class ppo(object):
                         # aloss = self.alossr, closs = self.clossr, 
                         # mu = mu, sigma = sigma))
                         .format(TRAIN_TIME = TRAIN_TIME, ep = ep, t = t,
+                        state = state,
                         aloss = self.alossr, closs = self.clossr, 
                         mu = mu, sigma = sigma))
 
