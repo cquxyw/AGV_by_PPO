@@ -20,8 +20,8 @@ import os
 
 import subprocess
 
-real_env = 1
-goal = [(0,0),(-6,-7)]
+real_env = 0
+goal = [(0,0),(-6,-7),(-6,3),(-1,5),(3,-8)]
 
 class env(object):
 
@@ -29,7 +29,7 @@ class env(object):
         self.limit_v = 1.5
         self.limit_w = 0.785
 
-        self.reach_goal_circle = 0.8
+        self.reach_goal_circle = 0.6
     
     def gazebo_srv(self):
         subprocess.Popen(['rosservice','call','/gazebo/set_model_state', '{model_state: { model_name: goal, pose: { position: { x: %i, y: %i ,z: 1 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }' %(self.goal_x, self.goal_y)])
@@ -115,7 +115,7 @@ class env(object):
         else:
             current_obs_info = np.array([
                 [5,3,0.5,0.5],
-                [-2,4,0.5,0.5],
+                [-2,-4,0.5,0.5],
                 [-4,5,0.5,0.5],
                 [3,-3,0.5,0.5],
                 [-7,-1,0.5,0.5],
@@ -171,9 +171,9 @@ class env(object):
         
         # param
         n_goal = 1
-        n_obs = 15
+        n_obs = 30
 
-        safe_dis = 1
+        safe_dis = 2
         car_circle = 1.1
 
         obs_len = obs_state[2]
@@ -188,6 +188,7 @@ class env(object):
         dis_obs = math.hypot(dis_obs_x, dis_obs_y)
 
         # calculate orientation between car and obstacle
+        # Attention: relative dis
         if dis_obs_x > 0:
             ori_obs = math.atan(dis_obs_y / dis_obs_x)
         elif dis_obs_x < 0 and dis_obs_y > 0:
@@ -264,14 +265,17 @@ class env(object):
     def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
         norm = np.array([d_u, 1, -1])
-        norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
-        reward = norm_d_u / 320
+        if d_u > 0:
+            norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
+        else:
+            norm_d_u = - (d_u - np.max(norm)) / (np.min(norm) - np.max(norm))
+        reward = norm_d_u / 10
 
         if collide == 1:
             reward += -1
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 1
+            reward += 2
 
         if current_dis_from_ori > 12:
             reward += -1

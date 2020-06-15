@@ -19,9 +19,10 @@ import ppo_env_final as ppo_env
 import threading
 
 EP_MAX = 1000000
-EP_LEN = 320
+EP_LEN = 1000000
 BATCH = 64
 GAMMA = 0.9
+test = 0
 
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
@@ -95,7 +96,7 @@ if __name__ == '__main__':
             a_init = [0, 0]
             s = env.set_init_pose()
 
-            goal_index = 1
+            goal_index = random.randint(1, 4)
             env.choose_goal(goal_index)
             
             last_u_state = s[7]
@@ -107,6 +108,8 @@ if __name__ == '__main__':
 
             ep_r = 0
             time.sleep(0.5)
+
+            reach_time = 10
 
             for t in range(EP_LEN):
 
@@ -123,33 +126,29 @@ if __name__ == '__main__':
                     # os._exit(0)
 
                 ap = env.set_action(a)
-                print('v: %f ; w: %f' %(ap[0],ap[1]))
+                # print('v: %f ; w: %f' %(ap[0],ap[1]))
 
                 s_= env.compute_state()
-                print(s_)
+                # print(s_)
 
                 collide = s_[-1]
                 current_dis_from_des_point = s_[28]
                 current_dis_from_ori = s_[30]
 
                 u_state = s_[27]
-                print('u_state: %f' %(u_state))
+                # print('u_state: %f' %(u_state))
                 d_u = last_u_state - u_state
-                print('d_u: %f' %(d_u))
+                # print('d_u: %f' %(d_u))
 
                 # collide, current_dis_from_des_point to judge whether it is end of episode
                 r = env.compute_reward(collide, current_dis_from_des_point, current_dis_from_ori, d_u)
+                # print('R:%f'%(r))
 
                 last_u_state = u_state
 
                 ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
 
-                if ep == 0:
-                    s_buff = s[np.newaxis, ...]
-
-                s_buff = s_[np.newaxis, ...]
-
-                buffer_s.append(s_buff)
+                buffer_s.append(s)
                 buffer_a.append(a)
                 buffer_r.append((r+8)/8)
                 s = s_
@@ -157,29 +156,41 @@ if __name__ == '__main__':
                 
                 # Batch end normally
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    if test == 0:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
 
                 # Batch end with special behaviors
                 if current_dis_from_des_point < env.reach_goal_circle:
-                    if goal_index == 1:
-                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    if not goal_index == 0:
                         print('Reach goal')
+                        if test == 0:
+                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        else:
+                            time.sleep(2)
                         goal_index = 0
                         env.choose_goal(goal_index)
                         continue
-
-                    if goal_index == 0:
-                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    else:
                         print('Sucess return')
+                        if test == 0:
+                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                            ppo.save(reach_time)
+                            reach_time += 1
+                        else:
+                            time.sleep(2)
                         break
             
                 if collide == 1:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    if test == 0:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Collision')
                     break
 
                 if current_dis_from_ori > 12:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    if test == 0:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    else:
+                        time.sleep(2)
                     print('Out range')
                     break
             
@@ -200,7 +211,7 @@ if __name__ == '__main__':
             
             # Save model
             if ep % 50 == 0:
-                 ppo.save(TRAIN_TIME+1)
+                ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment
             env.reset_env()
