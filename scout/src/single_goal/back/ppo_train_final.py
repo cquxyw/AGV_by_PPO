@@ -91,8 +91,6 @@ if __name__ == '__main__':
 
         env = ppo_env.env()
         env.choose_goal(1)
-        
-        print('Goal is %i, %i' %(env.goal_x, env.goal_y))
 
         # save_para(ppo, env, TRAIN_TIME+1)
 
@@ -105,6 +103,8 @@ if __name__ == '__main__':
 
             goal_index = random.randint(1, 4)
             env.choose_goal(goal_index)
+            print('Goal:%i,%i' %(env.goal_x,env.goal_y))
+            env.gazebo_srv()
             
             last_u_state = s[7]
             # last_dis_from_des_point, last_dis_from_ori = env.compute_param()

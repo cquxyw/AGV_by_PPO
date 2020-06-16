@@ -16,7 +16,7 @@
     <param name="robot_description"
     command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/scout_real.xacro'"/>
     <param name="goal_description"
-    command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/goal_range.xacro'"/>
+    command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/goal_final.xacro'"/>
 
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model scout -param robot_description"/> 

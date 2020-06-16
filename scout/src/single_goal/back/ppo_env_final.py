@@ -32,7 +32,7 @@ class env(object):
         self.reach_goal_circle = 0.6
     
     def gazebo_srv(self):
-        subprocess.Popen(['rosservice','call','/gazebo/set_model_state', '{model_state: { model_name: goal, pose: { position: { x: %i, y: %i ,z: 1 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }' %(self.goal_x, self.goal_y)])
+        subprocess.Popen(['rosservice','call','/gazebo/set_model_state', '{model_state: { model_name: goal1, pose: { position: { x: %i, y: %i ,z: 1 }, orientation: {x: 0, y: 0, z: 0, w: 0 } }, twist: { linear: {x: 0.0 , y: 0 ,z: 0 } , angular: { x: 0.0 , y: 0 , z: 0.0 } } , reference_frame: world } }' %(self.goal_x, self.goal_y)])
 
         # gazebo_goal_msg = ModelState()
         # gazebo_goal_msg.model_name = 'goal'

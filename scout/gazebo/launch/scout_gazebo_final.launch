@@ -15,14 +15,19 @@
     </include>
     <param name="robot_description"
     command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/scout_real.xacro'"/>
-    <param name="goal_description"
+    <param name="goal_description1"
     command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/goal_final.xacro'"/>
+    <param name="goal_description2"
+    command ="$(find xacro)/xacro --inorder '$(find scout)/description/urdf/goal_range.xacro'"/>
 
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model scout -param robot_description"/> 
 
     <node name="urdf_spawner2" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -model goal -param goal_description"/> 
+    args="-urdf -model goal -param goal_description1"/> 
+
+    <node name="urdf_spawner3" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model goal1 -param goal_description2"/> 
 
     <node pkg="scout" name="RL_input" type="RL_input"/>
 

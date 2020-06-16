@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<robot name="goal" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="range" xmlns:xacro="http://www.ros.org/wiki/xacro">
     
   <link name="world"/>
 
-  <joint name="fixed" type="fixed">
+  <!-- <joint name="fixed" type="fixed">
     <parent link="world"/>
     <child link="goal"/>
   </joint>
@@ -31,7 +31,7 @@
         iyy="1.0" iyz="0.0"
         izz="1.0"/>
       </inertial>
-  </link>
+  </link> -->
 
   <joint name="fixed2" type="fixed">
     <parent link="world"/>
@@ -93,7 +93,7 @@
       </inertial>
   </link>
 
-  <gazebo reference="goal">  
+  <!-- <gazebo reference="goal">  
     <visual>  
       <material>  
         <ambient>0 0.5 0 0.1</ambient>  
@@ -102,7 +102,7 @@
         <emissive>0.46 0.46 0.46 0.5</emissive>  
       </material>  
     </visual>  
-  </gazebo>
+  </gazebo> -->
 
   <gazebo reference="ori">  
     <visual>  
