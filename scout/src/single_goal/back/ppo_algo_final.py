@@ -120,7 +120,7 @@ class ppo(object):
     def get_v(self, s):
         if s.ndim < 2: 
             s = s[np.newaxis, :]
-        return self.sess.run(self.v, {self.tfs: s})[0, 0]
+        return self.sess.run(self.v, {self.tfs: s})
     
     def save(self, TRAIN_TIME):
         dir_path = 'Train_Result/single/model/PPO_final_%i.ckpt' %(TRAIN_TIME)

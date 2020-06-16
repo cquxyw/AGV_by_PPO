@@ -269,7 +269,7 @@ class env(object):
             norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
         else:
             norm_d_u = - (d_u - np.max(norm)) / (np.min(norm) - np.max(norm))
-        reward = norm_d_u / 10
+        reward = norm_d_u / 20
 
         if collide == 1:
             reward += -1
