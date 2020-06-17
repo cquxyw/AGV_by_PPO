@@ -46,23 +46,18 @@ def save_para(ppo, env, TRAIN_TIME):
     writer.writerow(data)
     csvfile.close()
 
-def update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a):
-    bs_ = np.vstack(buffer_s_)
-    v_s_ = ppo.get_v(bs_)
+def update(ppo, s_, buffer_r, buffer_s, buffer_a):
+    
+    v_s_ = ppo.get_v(s_)
     discounted_r = []
 
-    for i in range(len(buffer_r)):
-        G = buffer_r[i] + GAMMA * v_s_[i]
-        discounted_r.append(G)
+    for r in buffer_r[::-1]:
+        v_s_ = r + GAMMA * v_s_
+        discounted_r.append(v_s_)
+    discounted_r.reverse()
 
-    # for r in buffer_r[::-1]:
-    #     v_s_ = r + GAMMA * v_s_
-    #     discounted_r.append(v_s_)
-    # discounted_r.reverse()
-
-    # bs, ba, br = np.vstack(buffer_s), np.vstack(buffer_a), np.array(discounted_r)[:, np.newaxis]
+    bs, ba, br = np.vstack(buffer_s), np.vstack(buffer_a), np.array(discounted_r)[:, np.newaxis]
     
-    bs, ba, br = np.vstack(buffer_s), np.vstack(buffer_a), np.vstack(discounted_r)
     buffer_s = []
     buffer_a = []
     buffer_r = []
@@ -113,8 +108,6 @@ if __name__ == '__main__':
             buffer_a = []
             buffer_r = []
 
-            buffer_s_ = []
-
             ep_r = 0
             time.sleep(0.5)
 
@@ -160,7 +153,6 @@ if __name__ == '__main__':
                 buffer_s.append(s)
                 buffer_a.append(a)
                 buffer_r.append((r+8)/8)
-                buffer_s_.append(s_)
 
                 s = s_
                 ep_r += r
@@ -168,14 +160,14 @@ if __name__ == '__main__':
                 # Batch end normally
                 if (t+1) % BATCH == 0 or t == EP_LEN-1:
                     if test == 0:
-                        update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a)
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
 
                 # Batch end with special behaviors
                 if current_dis_from_des_point < env.reach_goal_circle:
                     if not goal_index == 0:
                         print('Reach goal')
                         if test == 0:
-                            update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a)
+                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
                         else:
                             time.sleep(2)
                         goal_index = 0
@@ -184,7 +176,7 @@ if __name__ == '__main__':
                     else:
                         print('Sucess return')
                         if test == 0:
-                            update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a)
+                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
                             ppo.save(reach_time)
                             reach_time += 1
                         else:
@@ -193,13 +185,13 @@ if __name__ == '__main__':
             
                 if collide == 1:
                     if test == 0:
-                        update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a)
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Collision')
                     break
 
                 if current_dis_from_ori > 12:
                     if test == 0:
-                        update(ppo, buffer_s_, buffer_r, buffer_s, buffer_a)
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     else:
                         time.sleep(2)
                     print('Out range')
