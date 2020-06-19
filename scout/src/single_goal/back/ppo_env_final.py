@@ -264,18 +264,20 @@ class env(object):
 
     def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
-        norm = np.array([d_u, 1, -1])
+        norm = np.array([d_u, 0.1, -0.1])
         if d_u > 0:
             norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
         else:
             norm_d_u = - (d_u - np.max(norm)) / (np.min(norm) - np.max(norm))
         reward = norm_d_u / 20
 
+        reward += -0.005
+
         if collide == 1:
             reward += -1
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 2
+            reward += 10
 
         if current_dis_from_ori > 12:
             reward += -1

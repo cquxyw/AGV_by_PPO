@@ -19,7 +19,7 @@ import ppo_env_final as ppo_env
 import threading
 
 EP_MAX = 1000000
-EP_LEN = 1000000
+EP_LEN = 640
 BATCH = 32
 GAMMA = 0.9
 test = 0
@@ -47,7 +47,7 @@ def save_para(ppo, env, TRAIN_TIME):
     csvfile.close()
 
 def update(ppo, s_, buffer_r, buffer_s, buffer_a):
-    
+
     v_s_ = ppo.get_v(s_)
     discounted_r = []
 
@@ -166,34 +166,24 @@ if __name__ == '__main__':
                 if current_dis_from_des_point < env.reach_goal_circle:
                     if not goal_index == 0:
                         print('Reach goal')
-                        if test == 0:
-                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                        else:
-                            time.sleep(2)
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
                         goal_index = 0
                         env.choose_goal(goal_index)
                         continue
                     else:
                         print('Sucess return')
-                        if test == 0:
-                            update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                            ppo.save(reach_time)
-                            reach_time += 1
-                        else:
-                            time.sleep(2)
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        ppo.save(reach_time)
+                        reach_time += 1
                         break
             
                 if collide == 1:
-                    if test == 0:
-                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Collision')
                     break
 
                 if current_dis_from_ori > 12:
-                    if test == 0:
-                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    else:
-                        time.sleep(2)
+                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     print('Out range')
                     break
             
@@ -213,7 +203,7 @@ if __name__ == '__main__':
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)
             
             # Save model
-            if ep % 50 == 0:
+            if ep % 20 == 0:
                 ppo.save(TRAIN_TIME+1)
 
             # Reset gazebo environment
