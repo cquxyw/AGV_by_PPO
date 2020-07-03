@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import logging
 
-GAMMA = 0.9
+GAMMA = 0.99
 A_UPDATE_STEPS = 30
 C_UPDATE_STEPS = 30
 S_DIM = 34
@@ -21,7 +21,7 @@ class ppo(object):
         self.tfs = tf.placeholder(tf.float32, [None, S_DIM], 'state')
         self.TRAIN_TIME = TRAIN_TIME
 
-        self.A_LR = 1.0e-6 * pow(0.8, self.TRAIN_TIME)
+        self.A_LR = 1.0e-5 * pow(0.8, self.TRAIN_TIME)
         self.C_LR = 2 * self.A_LR
 
         # define logger

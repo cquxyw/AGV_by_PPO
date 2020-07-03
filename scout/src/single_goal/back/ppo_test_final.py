@@ -16,8 +16,8 @@ import ppo_algo_final as ppo_algo
 import ppo_env_final as ppo_env
 
 EP_MAX = 1000000
-EP_LEN = 1000000
-BATCH = 32
+EP_LEN = 640
+BATCH = 64
 GAMMA = 0.9
 test = 0
 
@@ -34,26 +34,26 @@ if __name__ == '__main__':
         BREAK = 0
 
         ppo = ppo_algo.ppo(TRAIN_TIME)
-        print('\n Training Start')
 
         # 0: basic model
-        ppo.restore(0)
+        ppo.restore(10)
         env = ppo_env.env()
-        env.choose_goal(1)
+        env.choose_goal(0)
 
         for ep in range(EP_MAX):
-
             a_init = [0, 0]
-            s = env.set_init_pose()
+            # env.reset_env()
+        
+            goal_index = 1
 
-            goal_input = input("请输入目的地：")
-
+            goal_input = eval(input("请输您想要去的目的地："))
             env.goal_x = goal_input[0]
             env.goal_y = goal_input[1]
             env.gazebo_srv()
+            print("输入目的地为：%i, %i；任务开始" %(env.goal_x, env.goal_y))
 
-            print("目的地为：%i, %i；任务开始" %(env.goal_x, env.goal_y))
-            
+            s = env.set_init_pose()
+
             last_u_state = s[7]
 
             buffer_s = []
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             buffer_r = []
 
             ep_r = 0
-            time.sleep(2)
+            time.sleep(0.5)
 
             for t in range(EP_LEN):
 
@@ -69,7 +69,6 @@ if __name__ == '__main__':
 
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
-                    ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
                     print('Warning: Action is nan. Restart Train')
                     break
 
@@ -83,6 +82,10 @@ if __name__ == '__main__':
                 current_dis_from_ori = s_[30]
 
                 # ppo.write_log(TRAIN_TIME, ep, t, a, s_, r)
+                if t == EP_LEN-1:
+                    print('任务超时')
+                    time.sleep(2)
+                    break
 
                 if current_dis_from_des_point < env.reach_goal_circle:
                     if not goal_index == 0:

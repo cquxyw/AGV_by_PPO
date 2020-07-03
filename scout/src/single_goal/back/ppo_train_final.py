@@ -19,8 +19,8 @@ import ppo_env_final as ppo_env
 import threading
 
 EP_MAX = 1000000
-EP_LEN = 640
-BATCH = 32
+EP_LEN = 960
+BATCH = 64
 GAMMA = 0.9
 test = 0
 
@@ -198,6 +198,12 @@ if __name__ == '__main__':
                 "|Ep_r: %.3f" % ep_r,
                 ("|Lam: %.4f" % METHOD['lam']) if METHOD['name'] == 'kl_pen' else '',
             )
+
+            # if ep_r > 0:
+            #     if ppo.A_LR >= 1e-8:
+            #         ppo.A_LR = ppo.A_LR * 0.99
+            #     else:
+            #         ppo.A_LR = 1e-8
 
             # Save reward data for plot
             PLOT_EPISODE, PLOT_REWARD = save_plot(ep, ep_r, TRAIN_TIME, PLOT_EPISODE, PLOT_REWARD)

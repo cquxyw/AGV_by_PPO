@@ -264,7 +264,7 @@ class env(object):
 
     def compute_reward(self, collide, current_dis_from_des_point, current_dis_from_ori, d_u):
 
-        norm = np.array([d_u, 0.1, -0.1])
+        norm = np.array([d_u, 1, -1])
         if d_u > 0:
             norm_d_u = (d_u - np.min(norm)) / (np.max(norm) - np.min(norm))
         else:
@@ -277,7 +277,7 @@ class env(object):
             reward += -1
 
         if current_dis_from_des_point < self.reach_goal_circle:
-            reward += 10
+            reward += 2
 
         if current_dis_from_ori > 12:
             reward += -1
@@ -291,4 +291,8 @@ class env(object):
 
     def reset_env(self):
         subprocess.Popen(['rosservice','call','/gazebo/reset_world'])
+        # self.gazebo_srv()
+    
+    def reset_sim(self):
+        subprocess.Popen(['rosservice','call','/gazebo/reset_simulation'])
         # self.gazebo_srv()
