@@ -23,23 +23,23 @@
 `roslaunch scout based.launch`
 
 ## Robot model
-The robot's name is scout, which is provided by AgileX Robotics.
+The robot's name is scout, which is provided by AgileX Robotics.  
 ![real model](./img/scout_real.png)  
 - [robot model](./scout/description/)   
-- joints and links definition  
-- physical appearance  
-- sensor plug
+   - joints and links definition  
+   - physical appearance  
+   - sensor plug  
 ![virtual_model](./img/scout_vir.png)  
 
 ## Object detection by LIDAR  
 - [object detection by LIDAR](./vlp_fir/)  
-- [use rviz to show detection result](./scout/description/launch/)
+- [use rviz to show detection result](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
 
 ## Navigation based on RL(PPO)  
 - robot is trained to avoid obstacles and reach the goal area (green area).  
 - [provided three strategies to train the robot](./scout/src)   
-- based strategy: fixed goal.  
+   - based strategy: fixed goal.  
 ![based_test](./img/based_dem.gif)  
-- random goal strategy: random goal.
-- disturb strategy: simulated low-price GPS by add random noise in odom.
+   - random goal strategy: random goal.  
+   - disturb strategy: simulated low-price GPS by add random noise in odom.
