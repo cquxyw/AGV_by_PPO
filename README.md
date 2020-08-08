@@ -19,7 +19,9 @@
 ## Simulation of world  
 - the description of simulated world [/scout/gazebo/worlds/](./scout/gazebo/worlds/)  
 - launch file to start the environment [/scout/gazebo/launch/](./scout/gazebo/launch/)  
-`roslaunch scout based.launch`
+```
+roslaunch scout based.launch
+```
 
 ## Robot model
 The robot's name is scout, which is provided by AgileX Robotics.  
@@ -31,7 +33,7 @@ The robot's name is scout, which is provided by AgileX Robotics.
 ![virtual_model](./img/scout_vir.png)  
 
 ## Object detection by LIDAR  
-- use plc to process LIDAR data, provided in [(/vlp_fir)](./vlp_fir/)  
+- use plc to process LIDAR data, provided in [/vlp_fir/](./vlp_fir/)  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
 
