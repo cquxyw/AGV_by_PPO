@@ -9,5 +9,5 @@ Virtual model
 3. [Object detection by LADAR](./vlp_fir/)  
 ![LIDAR](./img/LIDAR.gif)
 4. [PPO algorithm](./scout/src)  
-![based_test](./img/based_test.gif)
+![based_test](./img/based_test.gif)  
 The red area is the region allowed to drive and the green area is the goal region. The robot is trained to avoid obstacles and reach the goal region.
