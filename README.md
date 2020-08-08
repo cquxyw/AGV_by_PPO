@@ -1,13 +1,13 @@
 # Reinforcement Learning-based Navigation for Autonoumous Robot
 
 ## Table of Contents  
-- [Table of contents](#table of contents)  
+- [Table of contents](#table-of-contents)  
 - [Objectives](#objectives)  
 - [Setup](#setup)  
-- [Simulation of world](#simulation of world)  
-- [Physical model of scout](#physical model of scout)  
-- [Object detection by LIDAR](#object detection by LIDAR)  
-- [Navigation based on RL(PPO)](#navigation based on RL(PPO))  
+- [Simulation of world](#simulation-of-world)  
+- [Physical model of scout](#physical-model-of-scout)  
+- [Object detection by LIDAR](#object-detection-by-LIDAR)  
+- [Navigation based on RL(PPO)](#navigation-based-on-RL(PPO))  
 
 ## Objectives  
 - The algorithm is simulated in Gazebo based on a robot named scout.  
