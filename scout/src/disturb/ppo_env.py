@@ -32,8 +32,8 @@ class env(object):
         # print(action)
         
         # clip action
-        action[0] = np.clip(action[0], -self.limit_v, self.limit_v)
-        action[1] = np.clip(action[1], -self.limit_w, self.limit_w)
+        action[0] = self.limit_v * np.clip(action[0], -self.limit_v, self.limit_v)
+        action[1] = self.limit_w * np.clip(action[1], -self.limit_w, self.limit_w)
 
 
         # publish action
@@ -114,15 +114,17 @@ class env(object):
         state = np.concatenate([current_state_info, current_obs_info])
         return state
     
-    def compute_reward(self, collide, overspeed, current_dis_from_des_point):
+    def compute_reward(self, collide, overspeed, current_dis_from_des_point, n):
 
         reward = 0
 
         if collide == 1:
             reward += -1
 
-        if current_dis_from_des_point < self.reach_goal_circle:
+        if n == 1 and current_dis_from_des_point < self.reach_goal_circle:
             reward += 2
+        elif n == 1 and current_dis_from_des_point > self.reach_goal_circle:
+            reward += -1
 
         if current_dis_from_des_point > self.limit_circle:
             reward += -1

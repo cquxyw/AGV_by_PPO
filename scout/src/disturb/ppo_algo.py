@@ -6,7 +6,7 @@ import os
 GAMMA = 0.9
 A_UPDATE_STEPS = 10
 C_UPDATE_STEPS = 10
-S_DIM, A_DIM = 17, 2
+S_DIM, A_DIM = 17, 3
 METHOD = [
     dict(name='kl_pen', kl_target=0.01, lam=0.5),   # KL penalty
     dict(name='clip', epsilon=0.2),                 # Clipped surrogate objective, find this is better
@@ -80,7 +80,7 @@ class ppo(object):
     def _build_anet(self, name, trainable):
         with tf.variable_scope(name):
             l1 = tf.layers.dense(self.tfs, 100, tf.nn.relu, trainable=trainable)
-            mu = 2 * tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
+            mu = tf.layers.dense(l1, A_DIM, tf.nn.tanh, trainable=trainable)
             sigma = tf.layers.dense(l1, A_DIM, tf.nn.softplus, trainable=trainable)
             norm_dist = tf.distributions.Normal(loc=mu, scale=sigma, allow_nan_stats=False)   
         params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=name)
@@ -100,7 +100,7 @@ class ppo(object):
         self.saver.save(self.sess, dir_path)
     
     def restore(self, TRAIN_TIME):
-        model_path = '/home/xyw/BUAA/Graduation/src/scout/model/based/based.ckpt'
+        model_path = '/home/xyw/BUAA/Graduation/src/scout/model/disturb/no_obs/disturb.ckpt'
         meta_path = model_path + '.meta'
         if os.path.exists(meta_path):
             self.saver = tf.train.import_meta_graph(meta_path)

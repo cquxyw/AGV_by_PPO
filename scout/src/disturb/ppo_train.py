@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
             for t in range(EP_LEN):
 
-                a =  ppo.choose_action(s)
+                a = ppo.choose_action(s)
 
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
@@ -111,7 +111,12 @@ if __name__ == '__main__':
                 collide = env.get_collision_info()
                 overspeed, current_dis_from_des_point = env.compute_param()
 
-                r = env.compute_reward(collide, overspeed, current_dis_from_des_point)
+                if 2*a[2] > 1:
+                    n = 1
+                else:
+                    n = 0
+
+                r = env.compute_reward(collide, overspeed, current_dis_from_des_point, n)
 
                 buffer_s.append(s)
                 buffer_a.append(a)
@@ -129,12 +134,17 @@ if __name__ == '__main__':
                     # print(ppo.alossr, ppo.clossr)
                     print('Collision')
                     break
-                
-                if current_dis_from_des_point < env.reach_goal_circle:
-                    update(ppo, s_, buffer_r, buffer_s, buffer_a)
-                    # print(ppo.alossr, ppo.clossr)
-                    print('Sucess')
-                    break
+                if 2*a[2] > 1:
+                    if current_dis_from_des_point < env.reach_goal_circle:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        # print(ppo.alossr, ppo.clossr)
+                        print('Sucess')
+                        break
+                    else:
+                        update(ppo, s_, buffer_r, buffer_s, buffer_a)
+                        # print(ppo.alossr, ppo.clossr)
+                        print('Mis-decision')
+                        break
                 elif current_dis_from_des_point > env.limit_circle:
                     update(ppo, s_, buffer_r, buffer_s, buffer_a)
                     # print(ppo.alossr, ppo.clossr)
