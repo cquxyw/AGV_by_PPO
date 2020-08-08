@@ -9,8 +9,10 @@
 - [Object detection by LIDAR](#object-detection-by-LIDAR)  
 - [Navigation based on RL(PPO)](#navigation-based-on-RL(PPO))  
 
-## Objectives  
-- The algorithm is simulated in Gazebo based on a robot named scout.  
+## Description  
+- Simulated in Gazebo.
+- Robot's name is scout.
+- Scout is trained to find destination by itself.
 
 ## Setup  
 
