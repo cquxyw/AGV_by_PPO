@@ -96,7 +96,7 @@ if __name__ == '__main__':
             a_init = [0, 0]
             s = env.set_init_pose()
 
-            goal_index = random.randint(1, 4)
+            goal_index = random.randint(0, 3)
             env.choose_goal(goal_index)
             print('Goal:%i,%i' %(env.goal_x,env.goal_y))
             env.gazebo_srv()

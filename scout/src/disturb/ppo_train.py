@@ -12,7 +12,7 @@ import os
 import csv
 
 import subprocess
-import ppo_algo_tf1 as ppo_algo
+import ppo_algo
 import ppo_env
 
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
             for t in range(EP_LEN):
 
                 a =  ppo.choose_action(s)
-                print('V: %f ; W: %f' %(a[0], a[1]))
+
                 if np.isnan(a[0]) or np.isnan(a[1]):
                     BREAK = 1
                     print('Warning: Action is nan. Restart Train')
