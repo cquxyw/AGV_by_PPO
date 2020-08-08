@@ -10,9 +10,9 @@
 - [Navigation based on RL(PPO)](#navigation-based-on-RL(PPO))  
 
 ## Description  
-- Simulated in Gazebo.
-- Robot's name is scout.
-- Scout is trained to find destination by itself.
+- Create a simulation environment.
+- Detect obstacles by LIDAR and locate ego position by GPS.
+- Train the robot to find destination by itself.
 
 ## Setup  
 
