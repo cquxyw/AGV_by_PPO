@@ -8,6 +8,6 @@ Real model
 Virtual model  
 3. [Object detection by LADAR](./vlp_fir/)  
 ![LIDAR](./img/LIDAR.gif)
-4. [PPO algorithm](./scout/src)  
+4. [Navigation based on RL(PPO)](./scout/src)  
 ![based_test](./img/based_dem.gif)  
 The robot is trained to avoid obstacles and reach the goal area (green area).
