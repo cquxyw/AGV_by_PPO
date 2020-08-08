@@ -1,13 +1,26 @@
-# Reinforcement learning-based Navigation for Autonoumous Robot
+# Reinforcement Learning-based Navigation for Autonoumous Robot
+---
+## Table of Contents  
+---
+- [World of simulation](./scout/gazebo/worlds/)  
+- [Physical model of scout](./scout/description/)  
+- [Object detection by LIDAR](./vlp_fir/)  
+- [Navigation based on RL(PPO)](./scout/src)  
+## Objectives  
+---
 The algorithm is simulated in Gazebo based on a robot named scout.  
-1. [World of simulation](./scout/gazebo/worlds/)  
-2. [Physical model of scout](./scout/description/)  
+## Setup  
+---
+## Physical model of scout  
+---
 ![real model](./img/scout_real.png)  
 Real model  
 ![virtual_model](./img/scout_vir.png)  
 Virtual model  
-3. [Object detection by LADAR](./vlp_fir/)  
-![LIDAR](./img/LIDAR.gif)
-4. [Navigation based on RL(PPO)](./scout/src)  
+## Object detection by LIDAR  
+---
+![LIDAR](./img/LIDAR.gif)  
+## Navigation based on RL(PPO)  
+---
 ![based_test](./img/based_dem.gif)  
 The robot is trained to avoid obstacles and reach the goal area (green area).
