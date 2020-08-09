@@ -5,8 +5,8 @@
 - [Objectives](#objectives)  
 - [Setup](#setup)  
 - [Quick Start](#quick-start)  
-   -[Simulation environment](#simulation-environment)
-   -[Navigation Training](#navigation-training)
+   - [Simulation environment](#simulation-environment)  
+   - [Navigation Training](#navigation-training)  
 - [Description](#description)  
    - [Robot model](#robot-model)
    - [Object detection by LIDAR](#object-detection-by-LIDAR)  
@@ -28,6 +28,9 @@ roslaunch scout based.launch
 - we provided three world description in [/scout/gazebo/launch/](/scout/gazebo/launch/)  
 ### Navigation Training
 - start training by running [ppo_train.py](/scout/src/based/ppo_train.py)
+```
+python ppo_train.py
+```
 - three training strategies correspond to three environment  
    - [based](/scout/src/based/) - fixed goal.  
    - [random goal](/scout/src/random_goal/) - random goal.  
