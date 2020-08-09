@@ -25,28 +25,28 @@
 ```
 roslaunch scout based.launch
 ```
-- we provided three world description in [/scout/gazebo/launch/](/scout/gazebo/launch/)  
+- we provided three world description in [`/scout/gazebo/launch/`](/scout/gazebo/launch/)  
 ### Navigation Training
-- start training by running [ppo_train.py](/scout/src/based/ppo_train.py)
+- start training by running [`ppo_train.py`](/scout/src/based/ppo_train.py)
 ```
 python ppo_train.py
 ```
 - three training strategies correspond to three environment  
-   - [based](/scout/src/based/) - fixed goal.  
-   - [random goal](/scout/src/random_goal/) - random goal.  
-   - [disturb](/scout/src/disturb/) - simulated low-price GPS by add random noise in odom.  
+   - [`based`](/scout/src/based/) - fixed goal.  
+   - [`random goal`](/scout/src/random_goal/) - random goal.  
+   - [`disturb`](/scout/src/disturb/) - simulated low-price GPS by add random noise in odom.  
 
 ## Description
 ### Robot model
 The robot's name is scout, which is provided by AgileX Robotics.  
 ![real model](./img/scout_real.png)  
-- joints and links are defined by [urdf](/scout/description/urdf/)
-- physical appearance  are defined by [meshes](/scout/description/meshes/)
+- joints and links are defined by [`urdf`](/scout/description/urdf/)
+- physical appearance  are defined by [`meshes`](/scout/description/meshes/)
 - sensor plugs definition can be found in urdf files  
 ![virtual_model](./img/scout_vir.png)  
 
 ### Object detection by LIDAR  
-- use [pcl](./vlp_fir/) to process LIDAR data and detect objects.  
+- use [`pcl`](./vlp_fir/) to process LIDAR data and detect objects.  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
    
