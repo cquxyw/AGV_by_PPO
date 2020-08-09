@@ -40,7 +40,11 @@ The robot's name is scout, which is provided by AgileX Robotics.
 ## Navigation based on RL(PPO)  
 - robot is trained to avoid obstacles and reach the goal area (green area).  
 - provided three strategies to train the robot [/scout/src/](./scout/src/)   
-   - based strategy: fixed goal.  
-![based_test](./img/based_dem.gif)  
-   - random goal strategy - random goal.  
+   - based strategy - set fixed goal.  
+   - random goal strategy - set random goal.  
    - disturb strategy - simulated low-price GPS by add random noise in odom.
+## Training Result
+- based strategy  
+![based_test](./img/based_dem.gif)  
+- random goal strategy  
+- disturb strategy  
