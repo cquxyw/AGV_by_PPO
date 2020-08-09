@@ -13,9 +13,9 @@
 - [Training Result](#training-result)
 
 ## Objectives  
-- Create a simulation environment.
-- Detect obstacles by LIDAR and acquire ego location by GPS.
-- Train the robot to find destination by itself.
+- Create a simulation environment
+- Detect obstacles by LIDAR and acquire ego location by GPS
+- Train the robot to find destination by itself
 
 ## Setup  
 
@@ -33,13 +33,13 @@ roslaunch scout based.launch
 python ppo_train.py
 ```
 - three training strategies correspond to three environment  
-   - [`based`](/scout/src/based/) - fixed goal.  
-   - [`random goal`](/scout/src/random_goal/) - random goal.  
-   - [`disturb`](/scout/src/disturb/) - simulated low-price GPS by add random noise in odom.  
+   - [`based`](/scout/src/based/) - fixed goal  
+   - [`random goal`](/scout/src/random_goal/) - random goal  
+   - [`disturb`](/scout/src/disturb/) - simulated low-price GPS by add random noise in locations  
 
 ## Description
 ### Robot model
-The robot's name is scout, which is provided by AgileX Robotics.  
+The robot's name is scout, which is provided by AgileX Robotics  
 ![real model](./img/scout_real.png)  
 - joints and links are defined by [`urdf`](/scout/description/urdf/)
 - physical appearance  are defined by [`meshes`](/scout/description/meshes/)
@@ -47,7 +47,7 @@ The robot's name is scout, which is provided by AgileX Robotics.
 ![virtual_model](./img/scout_vir.png)  
 
 ### Object detection by LIDAR  
-- use [`pcl`](./vlp_fir/) to process LIDAR data and detect objects.  
+- use [`pcl`](./vlp_fir/) to process LIDAR data and detect objects  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
    
