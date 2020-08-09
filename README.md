@@ -52,7 +52,7 @@ The robot's name is scout, which is provided by AgileX Robotics
 ![LIDAR](./img/LIDAR.gif)  
    
 ## Training Result
-- based strategy  
+- based strategy - green area is the goal region which scout is aimed to reach  
 ![based_test](./img/based_dem.gif)  
 - random goal strategy  
 - disturb strategy  
