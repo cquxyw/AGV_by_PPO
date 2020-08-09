@@ -4,45 +4,49 @@
 - [Table of contents](#table-of-contents)  
 - [Objectives](#objectives)  
 - [Setup](#setup)  
-- [Simulation of world](#simulation-of-world)  
-- [Robot model](#robot-model)  
-- [Object detection by LIDAR](#object-detection-by-LIDAR)  
-- [Navigation based on RL(PPO)](#navigation-based-on-RL(PPO))  
+- [Quick Start](#quick-start)  
+   -[Simulation environment](#simulation-environment)
+   -[Navigation Training](#navigation-training)
+- [Description](#description)  
+   - [Robot model](#robot-model)
+   - [Object detection by LIDAR](#object-detection-by-LIDAR)  
+- [Training Result](#training-result)
 
-## Description  
+## Objectives  
 - Create a simulation environment.
 - Detect obstacles by LIDAR and acquire ego location by GPS.
 - Train the robot to find destination by itself.
 
 ## Setup  
 
-## Simulation of world  
-- the description of simulated world is provided in [/scout/gazebo/worlds/](./scout/gazebo/worlds/)  
-- launch file to start the environment [/scout/gazebo/launch/](./scout/gazebo/launch/)  
+## Quick Start
+### Simulation Environment  
+- start gazebo
 ```
 roslaunch scout based.launch
 ```
+- we provided three world description in [/scout/gazebo/launch/](/scout/gazebo/launch/)  
+### Navigation Training
+- start training by running [ppo_train.py](/scout/src/based/ppo_train.py)
+- three training strategies correspond to three environment  
+   - [based](/scout/src/based/) - fixed goal.  
+   - [random goal](/scout/src/random_goal/) - random goal.  
+   - [disturb](/scout/src/disturb/) - simulated low-price GPS by add random noise in odom.  
 
-## Robot model
+## Description
+### Robot model
 The robot's name is scout, which is provided by AgileX Robotics.  
 ![real model](./img/scout_real.png)  
-### Robot model   
-   - joints and links are defined by [urdf](/scout/description/urdf/)
-   - physical appearance  are defined by [meshes](/scout/description/meshes/)
-   - sensor plugs definition can be found in urdf files  
+- joints and links are defined by [urdf](/scout/description/urdf/)
+- physical appearance  are defined by [meshes](/scout/description/meshes/)
+- sensor plugs definition can be found in urdf files  
 ![virtual_model](./img/scout_vir.png)  
 
-## Object detection by LIDAR  
+### Object detection by LIDAR  
 - use [pcl](./vlp_fir/) to process LIDAR data and detect objects.  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
-
-## Navigation based on RL(PPO)  
-- robot is trained to avoid obstacles and reach the goal area (green area).  
-- provided three strategies to train the robot [/scout/src/](./scout/src/)   
-   - based strategy - set fixed goal.  
-   - random goal strategy - set random goal.  
-   - disturb strategy - simulated low-price GPS by add random noise in odom.
+   
 ## Training Result
 - based strategy  
 ![based_test](./img/based_dem.gif)  
