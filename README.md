@@ -17,7 +17,7 @@
 ## Setup  
 
 ## Simulation of world  
-- the description of simulated world [/scout/gazebo/worlds/](./scout/gazebo/worlds/)  
+- the description of simulated world is provided in [/scout/gazebo/worlds/](./scout/gazebo/worlds/)  
 - launch file to start the environment [/scout/gazebo/launch/](./scout/gazebo/launch/)  
 ```
 roslaunch scout based.launch
@@ -26,14 +26,14 @@ roslaunch scout based.launch
 ## Robot model
 The robot's name is scout, which is provided by AgileX Robotics.  
 ![real model](./img/scout_real.png)  
-- [robot model](./scout/description/)   
-   - joints and links definition  
-   - physical appearance  
-   - sensor plug  
+### Robot model   
+   - joints and links are defined by [urdf](/scout/description/urdf/)
+   - physical appearance  are defined by [meshes](/scout/description/meshes/)
+   - sensor plugs definition can be found in urdf files  
 ![virtual_model](./img/scout_vir.png)  
 
 ## Object detection by LIDAR  
-- use plc to process LIDAR data, provided in [/vlp_fir/](./vlp_fir/)  
+- use [pcl](./vlp_fir/) to process LIDAR data and detect objects.  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
 ![LIDAR](./img/LIDAR.gif)  
 
