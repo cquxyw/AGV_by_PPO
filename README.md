@@ -25,7 +25,8 @@
 ```
 roslaunch scout based.launch
 ```
-- we provided three world description in [`/scout/gazebo/launch/`](/scout/gazebo/launch/)  
+- world descriptions are provided in [`/scout/gazebo/launch/`](/scout/gazebo/launch/)  
+
 ### Navigation Training
 - start training by running [`ppo_train.py`](/scout/src/based/ppo_train.py)
 ```
