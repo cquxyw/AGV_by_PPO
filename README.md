@@ -41,8 +41,8 @@ python ppo_train.py
 ### Robot model
 The robot's name is scout, which is provided by AgileX Robotics  
 ![real model](./img/scout_real.png)  
-- joints and links are defined by [`urdf`](/scout/description/urdf/)
-- physical appearance  are defined by [`meshes`](/scout/description/meshes/)
+- joints and links are defined in [`urdf`](/scout/description/urdf/)
+- physical appearance  are defined in [`meshes`](/scout/description/meshes/)
 - sensor plugs definition can be found in urdf files  
 ![virtual_model](./img/scout_vir.png)  
 
