@@ -49,7 +49,7 @@ The robot's name is scout, which is provided by AgileX Robotics
    
 ## Training Result
 ### Based strategy
-Autonomous robot is trained to reach goal region (green area).
+Autonomous robot is trained to reach goal region (green area).  
 ![based_test](./img/based_dem.gif)  
 ### Disturb strategy  
 Simulating low-price GPS by add random noise in locations  
