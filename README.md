@@ -32,10 +32,6 @@ roslaunch scout based.launch
 ```
 python ppo_train.py
 ```
-- three training strategies correspond to three environment  
-   - [`based`](/scout/src/based/) - fixed goal  
-   - [`random goal`](/scout/src/random_goal/) - random goal  
-   - [`disturb`](/scout/src/disturb/) - simulated low-price GPS by add random noise in locations  
 
 ## Description
 ### Robot model
@@ -52,7 +48,8 @@ The robot's name is scout, which is provided by AgileX Robotics
 ![LIDAR](./img/LIDAR.gif)  
    
 ## Training Result
-- based strategy - green area is the destination  
+### Based strategy
+Autonomous robot is trained to reach goal region (green area).
 ![based_test](./img/based_dem.gif)  
-- random goal strategy  
-- disturb strategy  
+### Disturb strategy  
+Simulating low-price GPS by add random noise in locations  
