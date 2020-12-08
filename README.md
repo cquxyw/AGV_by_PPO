@@ -36,21 +36,21 @@ python ppo_train.py
 ## Description
 ### Robot model
 The robot's name is scout, which is provided by AgileX Robotics  
-![real model](./img/scout_real.png)  
+![real model]
 - joints and links are defined in [`urdf`](/scout/description/urdf/)
 - physical appearance  are defined in [`meshes`](/scout/description/meshes/)
 - sensor plugs definition can be found in urdf files  
-![virtual_model](./img/scout_vir.png)  
+![virtual_model] 
 
 ### Object detection by LIDAR  
 - use [`pcl`](./vlp_fir/) to process LIDAR data and detect objects  
 - use rviz to show detection result, launch files are provided in [/scout/description/launch/](./scout/description/launch/)  
-![LIDAR](./img/LIDAR.gif)  
+![LIDAR]
    
 ## Training Result
 ### Based strategy
 Autonomous robot is trained to reach goal region (green area).  
-![based_test](./img/based_dem.gif)  
+![based_test]
 ### Disturbing strategy  
 - Simulating low-price GPS by add random noise in coordinates.  
 - Add one dimension to action output for judging whether ego robot have reached the goal region.
