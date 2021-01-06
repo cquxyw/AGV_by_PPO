@@ -25,6 +25,7 @@ roslaunch scout based.launch
 
 ## Robot model
 The robot's name is scout, which is provided by AgileX Robotics.  
+Robot model is defined in [/scout/description/urdf/scout_real2.xacro](./scout/description/urdf/scout_real2.xacro)  
    - joints and links definition  
    - physical appearance  
    - sensor plug  
