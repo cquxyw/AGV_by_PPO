@@ -1,0 +1,18 @@
+<launch>
+
+    <include file="$(find velodyne_pointcloud)/launch/VLP-32C_points.launch" />
+
+    <node pkg="vlp_fir" name="do_it" type="do_it" />
+
+    <node pkg="serialport" name="serialport" type="serialport" />
+
+    <node pkg="gpstoenu" name="gpstoenu" type="gpstoenu" />
+
+    <node pkg="can_twist" name="can_twist" type="can_twist" />
+
+    <node pkg="PPO" name="RL_input" type="RL_input" />
+
+    <node pkg='rviz' name='rviz' type='rviz'
+    args="-d $(find PPO)/launch/lidar.rviz" />
+
+</launch>

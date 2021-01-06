@@ -1,0 +1,13 @@
+<launch>
+
+    <!-- <include file="$(find velodyne_pointcloud)/launch/VLP16_points.launch" />
+
+    <node pkg="vlp_fir" name="do_it" type="do_it" /> -->
+
+    <node pkg="gpstoenu" name="enu_sim" type="enu_sim" />
+
+    <node pkg="can_twist" name="can_twist" type="can_twist" />
+
+    <node pkg="PPO" name="RL_input" type="RL_input" />
+
+</launch>

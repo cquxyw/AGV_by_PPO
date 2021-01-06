@@ -1,0 +1,10 @@
+float64 lat
+float64 lon
+float64 hgt
+float64 vel_n
+float64 vel_e
+float64 vel_s
+float64 ang_r
+float64 ang_p
+float64 ang_y
+time stamp
