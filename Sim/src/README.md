@@ -37,6 +37,8 @@ Robot model is defined in [/scout/description/urdf/scout_real2.xacro](./scout/de
 ## Navigation based on RL(PPO)  
 - robot is trained to avoid obstacles and reach the goal area (green area).  
 - provided three strategies to train the robot [/scout/src/](./scout/src/)   
-   - based strategy: fixed goal.  
-   - random goal strategy - random goal.  
-   - disturb strategy - simulated low-price GPS by add random noise in odom.
+   - based strategy: fixed goal.  [scout/src/based/](./scout/src/based/)
+   - random goal strategy - random goal.  [/scout/src/real2/](./scout/src/real2/)
+   - low-GPS strategy - simulated low-price GPS by add random noise in odom. [scout/src/low-GPS/](./scout/src/low-GPS/)
+)
+]
