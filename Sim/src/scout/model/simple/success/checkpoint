@@ -1,0 +1,5 @@
+model_checkpoint_path: "/home/xyw/BUAA/Graduation/src/scout/model/simple/success/success_2.ckpt"
+all_model_checkpoint_paths: "/home/xyw/BUAA/Graduation/src/scout/model/simple/success/success_0.ckpt"
+all_model_checkpoint_paths: "/home/xyw/BUAA/Graduation/src/scout/model/simple/success/success_1.ckpt"
+all_model_checkpoint_paths: "/home/xyw/BUAA/Graduation/src/scout/model/simple/simple_1.ckpt"
+all_model_checkpoint_paths: "/home/xyw/BUAA/Graduation/src/scout/model/simple/success/success_2.ckpt"

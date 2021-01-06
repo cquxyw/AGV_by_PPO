@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<robot name="obs" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <link name="obs">
+    <collision>
+      <origin xyz="0 0 0.4" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.8"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="0 0 0.4" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.8"/>
+      </geometry>
+    </visual>
+
+    <inertial>
+      <origin xyz="0 0 0.4" rpy="0 0 0"/>
+      <mass value="40"/>
+      <inertia
+        ixx="0.0" ixy="0.0" ixz="0.4"
+        iyy="0.0" iyz="0.0"
+        izz="0.4"/>
+      </inertial>
+  </link>
+
+  <gazebo reference="obs">
+    <visual>  
+      <material>  
+        <ambient>0.7 0.1 0.1 1</ambient>  
+        <diffuse>0.7 0.7 0.7 1</diffuse>  
+        <specular>0.01 0.01 0.01 1</specular>  
+        <emissive>0 0 0 1</emissive>  
+      </material>  
+    </visual>  
+  </gazebo>
+
+</robot>
