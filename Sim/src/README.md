@@ -38,5 +38,5 @@ Robot model is defined in [/scout/description/urdf/scout_real2.xacro](./scout/de
 - robot is trained to avoid obstacles and reach the goal area (green area).  
 - provided three strategies to train the robot 
    - based strategy: fixed goal. - [scout/src/based/](./scout/src/based/)
-   - random goal strategy - random goal. - [/scout/src/real2/](./scout/src/real2/)
+   - random goal strategy - random goal. - [/scout/src/random/](./scout/src/random/)
    - low-GPS strategy - simulated low-price GPS by add random noise in odom. - [scout/src/low-GPS/](./scout/src/low-GPS/)
