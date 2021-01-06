@@ -2,7 +2,7 @@
 
 ## Table of Contents  
 - [Table of contents](#table-of-contents)  
-- [Objectives](#objectives)  
+- [Description](#description)  
 - [Setup](#setup)  
 - [Simulation of world](#simulation-of-world)  
 - [Robot model](#robot-model)  
